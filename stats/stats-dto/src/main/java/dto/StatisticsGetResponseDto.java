@@ -16,7 +16,7 @@ public class StatisticsGetResponseDto {
     String uri;
     Long hits;
 
-    public static StatisticsGetResponseDto toStatisticsGetResponseDto(Statistics statistics, Long hits){
+    public static StatisticsGetResponseDto toStatisticsGetResponseDto(Statistics statistics, Long hits) {
         return new StatisticsGetResponseDto(statistics.getApp(), statistics.getUri(), hits);
     }
 }
