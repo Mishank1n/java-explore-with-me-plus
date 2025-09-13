@@ -17,7 +17,7 @@ public class StatisticsPostResponseDto {
     String ip;
     LocalDateTime timestamp;
 
-    public static StatisticsPostResponseDto toStatisticsPostResponseDto(Statistics statistics){
+    public static StatisticsPostResponseDto toStatisticsPostResponseDto(Statistics statistics) {
         return new StatisticsPostResponseDto(statistics.getApp(), statistics.getUri(), statistics.getIp(), statistics.getTimestamp());
     }
 }
