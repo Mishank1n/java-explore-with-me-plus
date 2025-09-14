@@ -23,11 +23,11 @@ public class StatsController {
     }
 
     @GetMapping("/stats")
-    @ResponseStatus(HttpStatus.OK)
-    public List<StatisticsGetResponseDto> getStats(@RequestParam("start") LocalDateTime start,
-                                                   @RequestParam("end") LocalDateTime end,
-                                                   @RequestParam(value = "uris", required = false) List<String> uris,
-                                                   @RequestParam(value = "unique", required = false, defaultValue = "false") boolean unique) {
+    public List<StatisticsGetResponseDto> getStats(
+            @RequestParam LocalDateTime start,
+            @RequestParam LocalDateTime end,
+            @RequestParam(required = false) List<String> uris,
+            @RequestParam(defaultValue = "false") boolean unique) {
         return statService.getStats(start, end, uris, unique);
     }
 }
