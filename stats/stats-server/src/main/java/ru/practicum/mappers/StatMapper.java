@@ -1,9 +1,9 @@
 package ru.practicum.mappers;
 
-import dto.StatisticsPostResponseDto;
+import ru.practicum.dto.StatisticsPostResponseDto;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import model.Statistics;
+import ru.practicum.model.Statistics;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class StatMapper {

@@ -1,6 +1,6 @@
-package repository;
+package ru.practicum.repository;
 
-import model.Statistics;
+import ru.practicum.model.Statistics;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

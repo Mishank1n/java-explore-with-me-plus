@@ -1,7 +1,7 @@
 package ru.practicum.controller;
 
-import dto.StatisticsGetResponseDto;
-import dto.StatisticsPostResponseDto;
+import ru.practicum.dto.StatisticsGetResponseDto;
+import ru.practicum.dto.StatisticsPostResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

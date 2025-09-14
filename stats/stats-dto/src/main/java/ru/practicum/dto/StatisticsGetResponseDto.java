@@ -1,8 +1,8 @@
-package dto;
+package ru.practicum.dto;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import model.Statistics;
+import ru.practicum.model.Statistics;
 
 @Data
 @Builder
