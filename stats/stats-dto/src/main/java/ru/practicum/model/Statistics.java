@@ -1,6 +1,5 @@
 package ru.practicum.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,7 +7,8 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -29,7 +29,7 @@ public class Statistics {
     @Column(name = "ip", nullable = false)
     String ip;
 
-    @Column(name = "call_time", columnDefinition = "TIMESTAMP WITHOUT TIME ZONE", nullable = false)
+    @Column(name = "call_time", nullable = false)
     LocalDateTime timestamp;
 
 }
