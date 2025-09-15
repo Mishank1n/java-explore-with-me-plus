@@ -7,13 +7,14 @@ services:
     depends_on:
       - stats-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewmMainDB
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/statDB
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
 
   stats-db:
     image: postgres:16.1
-    container_name: stat-db
+    container_name: stats-db
     ports:
       - "5432:5432"
     environment:
@@ -32,6 +33,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewmMainDB
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=org.postgresql.Driver
 
   ewm-db:
     image: postgres:16.1
