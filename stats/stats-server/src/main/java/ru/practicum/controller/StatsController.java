@@ -1,6 +1,7 @@
 package ru.practicum.controller;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import ru.practicum.dto.StatisticsGetResponseDto;
 import ru.practicum.dto.StatisticsPostResponseDto;
 import jakarta.validation.Valid;
@@ -17,10 +18,11 @@ import java.util.List;
 public class StatsController {
     private final StatServiceImpl statService;
 
+
     @PostMapping("/hit")
-    @ResponseStatus(HttpStatus.CREATED)
-    public StatisticsPostResponseDto hit(@Valid @RequestBody StatisticsPostResponseDto statisticsPostResponseDto) {
-        return statService.hit(statisticsPostResponseDto);
+    public ResponseEntity<String> hit(@Valid @RequestBody StatisticsPostResponseDto statisticsPostResponseDto) {
+        statService.hit(statisticsPostResponseDto);
+        return new ResponseEntity<>("Информация сохранена", HttpStatus.CREATED);
     }
 
     @GetMapping("/stats")
