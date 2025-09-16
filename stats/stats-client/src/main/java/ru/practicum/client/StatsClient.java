@@ -10,8 +10,6 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.dto.StatisticsGetResponseDto;
 import ru.practicum.dto.StatisticsPostResponseDto;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
