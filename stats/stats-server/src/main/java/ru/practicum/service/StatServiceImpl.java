@@ -1,14 +1,14 @@
 package ru.practicum.service;
 
-import ru.practicum.dto.StatisticsGetResponseDto;
-import ru.practicum.dto.StatisticsPostResponseDto;
 import lombok.RequiredArgsConstructor;
-import ru.practicum.model.Statistics;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.dto.StatisticsGetResponseDto;
+import ru.practicum.dto.StatisticsPostResponseDto;
+import ru.practicum.mappers.StatMapper;
+import ru.practicum.model.Statistics;
 import ru.practicum.repository.StatisticsRepository;
 import ru.practicum.repository.ViewStats;
-import ru.practicum.mappers.StatMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;

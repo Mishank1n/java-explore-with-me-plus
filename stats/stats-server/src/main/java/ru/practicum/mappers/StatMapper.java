@@ -1,8 +1,8 @@
 package ru.practicum.mappers;
 
-import ru.practicum.dto.StatisticsPostResponseDto;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import ru.practicum.dto.StatisticsPostResponseDto;
 import ru.practicum.model.Statistics;
 
 import java.time.LocalDateTime;
