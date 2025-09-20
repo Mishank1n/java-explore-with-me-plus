@@ -14,15 +14,16 @@ public class ErrorHandler {
     public ErrorResponse handleNotFoundException(final RuntimeException e) {
         return new ErrorResponse(e.getMessage());
     }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(ValidationException e){
+    public ErrorResponse handleValidationException(ValidationException e) {
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleConstraintException(ConstraintException e){
+    public ErrorResponse handleConstraintException(ConstraintException e) {
         return new ErrorResponse(e.getMessage());
     }
 }
