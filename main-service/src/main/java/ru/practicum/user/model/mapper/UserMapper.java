@@ -1,8 +1,8 @@
-package ru.practicum.model.mapper;
+package ru.practicum.user.model.mapper;
 
-import ru.practicum.model.User;
-import ru.practicum.model.dto.UserDto;
-import ru.practicum.model.dto.UserRequest;
+import ru.practicum.user.model.User;
+import ru.practicum.user.model.dto.UserDto;
+import ru.practicum.user.model.dto.UserRequest;
 
 public class UserMapper {
     public static User toUser(UserRequest userRequest) {

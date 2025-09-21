@@ -1,12 +1,12 @@
-package ru.practicum.controller;
+package ru.practicum.user.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.model.dto.UserDto;
-import ru.practicum.model.dto.UserRequest;
-import ru.practicum.service.UserService;
+import ru.practicum.user.model.dto.UserDto;
+import ru.practicum.user.model.dto.UserRequest;
+import ru.practicum.user.service.UserService;
 
 import java.util.List;
 
