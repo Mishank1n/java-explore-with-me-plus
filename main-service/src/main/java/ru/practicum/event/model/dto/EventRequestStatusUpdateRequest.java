@@ -2,6 +2,7 @@ package ru.practicum.event.model.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.practicum.event.model.UpdateRequestState;
 
 import java.util.List;
 

@@ -5,14 +5,13 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import ru.practicum.category.model.dto.CategoryDto;
-import ru.practicum.user.model.dto.UserDto;
-
+import ru.practicum.user.model.dto.UserShortDto;
 
 
 @Getter
 @Setter
 public class EventShortDto {
-    private int id;
+    private long id;
     @NotBlank
     private String annotation;
     @NotNull
@@ -21,7 +20,7 @@ public class EventShortDto {
     @NotBlank
     private String eventDate;
     @NotNull
-    private UserDto initiator;
+    private UserShortDto initiator;
     @NotNull
     private boolean paid;
     @NotBlank

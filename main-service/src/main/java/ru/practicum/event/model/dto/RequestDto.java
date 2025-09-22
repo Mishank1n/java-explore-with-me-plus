@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ParticipationRequestDto {
+public class RequestDto {
     private int id;
     private String created;
     private int event;

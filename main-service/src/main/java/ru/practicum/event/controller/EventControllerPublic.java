@@ -6,7 +6,6 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.model.EventParam;
@@ -47,19 +46,17 @@ public class EventControllerPublic {
                 .sort(sort)
                 .from(from)
                 .size(size)
-                .requestUri(request.getRequestURI())
+                .request(request)
                 .build();
-        List<EventShortDto> eventDtos = eventService.getEvents(p);
 
         log.info("Выполнен запрос получения всех событий");
-        return eventDtos;
+        return eventService.getEvents(p);
     }
 
     @GetMapping("/{eventId}")
     public EventFullDto getEvent(@PathVariable(name = "eventId") int eventId,
                                                  HttpServletRequest request) {
         log.info("Выполнен запрос получения события с id={}", eventId);
-        EventFullDto eventDto = eventService.getEvent(eventId, request);
-        return eventDto;
+        return eventService.getEvent(eventId, request);
     }
 }

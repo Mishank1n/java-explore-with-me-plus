@@ -12,7 +12,7 @@ import ru.practicum.user.model.dto.UserShortDto;
 @Getter
 @Setter
 public class EventFullDto {
-    private int id;
+    private long id;
     @NotBlank
     private String annotation;
     @NotNull

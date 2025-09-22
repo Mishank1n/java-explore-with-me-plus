@@ -27,7 +27,7 @@ public class EventControllerAdmin {
     @PatchMapping("/{eventId}")
     public EventFullDto updateEvent(@PathVariable(name = "eventId") @Positive int eventId,
                                    @Valid @RequestBody UpdateEventAdminRequest adminRequest) {
-        EventFullDto eventFullDto = eventService.patchAdminEvent(eventId, adminRequest);
+        EventFullDto eventFullDto = eventService.updateAdminEvent(eventId, adminRequest);
         log.info("Админ обновил событие с Id={}", eventId);
         return eventFullDto;
     }
@@ -48,7 +48,7 @@ public class EventControllerAdmin {
                 .size(size)
                 .build();
 
-        List<EventFullDto> events = eventService.searchEvents(p);
+        List<EventFullDto> events = eventService.getEventsAdmin(p);
         log.info("Выполнен поиск событий администратором");
         return events;
     }

@@ -13,7 +13,7 @@ public class UpdateEventAdminRequest {
     @Nullable
     @Size(min = 20, max = 2000)
     private String annotation;
-    private int category;
+    private Long category;
     @Nullable
     @Size(min = 20, max = 7000)
     private String description;

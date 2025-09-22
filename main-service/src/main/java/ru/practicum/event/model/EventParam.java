@@ -1,5 +1,6 @@
 package ru.practicum.event.model;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Data;
 
@@ -28,4 +29,5 @@ public class EventParam {
     private Integer size;
 
     private String requestUri;
+    private HttpServletRequest request;
 }

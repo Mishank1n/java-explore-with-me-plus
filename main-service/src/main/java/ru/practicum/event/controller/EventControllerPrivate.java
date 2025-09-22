@@ -63,9 +63,9 @@ public class EventControllerPrivate {
 
 
     @GetMapping(eventIdRequests)
-    public List<ParticipationRequestDto> getParticipationInfo(@PathVariable(name = "userId") @Positive int userId,
-                                                              @PathVariable(name = "eventId") @Positive int eventId) {
-        List<ParticipationRequestDto> partRequestDtoList = eventService.getParticipationInfo(userId, eventId);
+    public List<RequestDto> getParticipationInfo(@PathVariable(name = "userId") @Positive int userId,
+                                                 @PathVariable(name = "eventId") @Positive int eventId) {
+        List<RequestDto> partRequestDtoList = eventService.getParticipationInfo(userId, eventId);
         log.info("Получена информация о запросах на учатсие в событии с Id={} пользователя с id={}", eventId, userId);
         return partRequestDtoList;
     }
