@@ -38,14 +38,13 @@ import static java.time.temporal.ChronoUnit.HOURS;
 
 @Service
 @RequiredArgsConstructor
-public class EventServiceImpl implements EventService{
+public class EventServiceImpl implements EventService {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final EventRepository eventJpaRepository;
     private final CategoryService categoryService;
     private final UserService userService;
-    private final RequestService requestService;
+    //    private final RequestService requestService;
     private final EntityManager entityManager;
-    private final StatsClient statsClient;
 
 
     @Transactional
@@ -74,7 +73,7 @@ public class EventServiceImpl implements EventService{
         if (events.isEmpty()) {
             return new ArrayList<>();
         }
-        Map<Integer, Long> idViewsMap = statsClient.getIdViews(events.stream().map(Event::getId).collect(Collectors.toList()));
+        Map<Long, Long> idViewsMap = StatsClient.getMapIdViews(events.stream().map(Event::getId).collect(Collectors.toList()));
 
 
         return events.stream()
@@ -88,7 +87,7 @@ public class EventServiceImpl implements EventService{
         PageRequest page = PageRequest.of(from / size, size, Sort.by("id").ascending());
 
         List<Event> events = eventJpaRepository.getAllByUser(userId, page);
-        Map<Integer, Long> idViewsMap = statsClient.getIdViews(events.stream()
+        Map<Long, Long> idViewsMap = StatsClient.getMapIdViews(events.stream()
                 .map(Event::getId)
                 .collect(Collectors.toList()));
 
@@ -102,7 +101,7 @@ public class EventServiceImpl implements EventService{
         if (event == null) {
             throw new NotFoundException("События с id=" + eventId + " и initiatorId=" + userId + " не найдено");
         }
-        Map<Integer, Long> idViewsMap = statsClient.getIdViews(List.of(event.getId()));
+        Map<Long, Long> idViewsMap = StatsClient.getMapIdViews(List.of(event.getId()));
 
         return EventMapper.toFullDto(event, idViewsMap.getOrDefault(event.getId(), 0L));
     }
@@ -112,7 +111,7 @@ public class EventServiceImpl implements EventService{
         Event event = eventJpaRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("События с id=" + eventId + " не найдено"));
 
-        Map<Integer, Long> idViewsMap = statsClient.getIdViews(List.of(event.getId()));
+        Map<Long, Long> idViewsMap = StatsClient.getMapIdViews(List.of(event.getId()));
         return EventMapper.toFullDto(event, idViewsMap.getOrDefault(event.getId(), 0L));
     }
 
@@ -127,7 +126,7 @@ public class EventServiceImpl implements EventService{
         endpointHitDto.setTimestamp(LocalDateTime.now().format(TIME_FORMAT));
         endpointHitDto.setUri(request.getRequestURI());
 
-        statsClient.postHit(endpointHitDto);
+        StatsClient.postHit(endpointHitDto);
 
         return eventDto;
     }
@@ -195,7 +194,7 @@ public class EventServiceImpl implements EventService{
         }
 
         eventJpaRepository.save(event);
-        Map<Integer, Long> idViewsMap = statsClient.getIdViews(List.of(event.getId()));
+        Map<Long, Long> idViewsMap = StatsClient.getMapIdViews(List.of(event.getId()));
 
         Event updatedEvent = eventJpaRepository.findById(event.getId())
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + event.getId() + " не найден"));
@@ -214,7 +213,7 @@ public class EventServiceImpl implements EventService{
             event.setAnnotation(annotation);
         }
         Long categoryId = adminRequest.getCategory();
-        if (categoryId > 0) {
+        if (categoryId != null && categoryId > 0) {
             CategoryDto categoryDto = categoryService.getById(categoryId);
             if (categoryDto != null) {
                 event.setCategory(CategoryMapper.toCategory(categoryDto));
@@ -277,7 +276,7 @@ public class EventServiceImpl implements EventService{
         }
 
         eventJpaRepository.save(event);
-        Map<Integer, Long> idViewsMap = statsClient.getIdViews(List.of(event.getId()));
+        Map<Long, Long> idViewsMap = StatsClient.getMapIdViews(List.of(event.getId()));
 
         Event updatedEvent = eventJpaRepository.findById(event.getId())
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + event.getId() + " не найден"));
@@ -285,39 +284,48 @@ public class EventServiceImpl implements EventService{
         return EventMapper.toFullDto(updatedEvent, idViewsMap.getOrDefault(event.getId(), 0L));
     }
 
-    @Transactional
-    public List<RequestDto> getParticipationInfo(int userId, int eventId) {
-
-        Event event = eventJpaRepository.getByIdAndUserId(eventId, userId);
-        if (event == null) {
-            throw new NotFoundException("События с id=" + eventId + " и initiatorId=" + userId + " не найдено");
+    @Override
+    public Set<Event> getEventsByIds(Set<Long> eventIds) {
+        if (eventIds == null || eventIds.isEmpty()) {
+            return new HashSet<>();
         }
-
-        return requestService.getAllRequestsEventId(event.getId());
+        //события выгружаются сразу с инициаторами по EAGER
+        List<Event> eventList = eventJpaRepository.findEventsWIthUsersByIdSet(eventIds); //получение списка событий из репозитория
+        return new HashSet<>(eventList);
     }
 
+//    @Transactional
+//    public List<RequestDto> getParticipationInfo(int userId, int eventId) {
+//
+//        Event event = eventJpaRepository.getByIdAndUserId(eventId, userId);
+//        if (event == null) {
+//            throw new NotFoundException("События с id=" + eventId + " и initiatorId=" + userId + " не найдено");
+//        }
+//
+//        return requestService.getAllRequestsEventId(event.getId());
+//    }
 
-    @Transactional
-    public EventRequestStatusUpdateResult updateStatus(int userId, int eventId, EventRequestStatusUpdateRequest updateRequest) {
-        Event event = eventJpaRepository.getByIdAndUserId(eventId, userId);
-        if (event == null) {
-            throw new NotFoundException("События с id=" + eventId + " и initiatorId=" + userId + " не найдено");
-        }
 
-        List<RequestDto> requests = requestService.getAllRequestsEventId(eventId);
-        int limit = event.getParticipantLimit();
-
-        if (updateRequest.getStatus() == UpdateRequestState.REJECTED) {
-            return rejectRequests(event, requests, updateRequest);
-        } else {
-            if ((limit == 0 || !event.isRequestModeration())) {
-                return confirmAllRequests(event, requests, updateRequest);
-            } else {
-                return confirmRequests(event, requests, updateRequest);
-            }
-        }
-    }
-
+//    @Transactional
+//    public EventRequestStatusUpdateResult updateStatus(int userId, int eventId, EventRequestStatusUpdateRequest updateRequest) {
+//        Event event = eventJpaRepository.getByIdAndUserId(eventId, userId);
+//        if (event == null) {
+//            throw new NotFoundException("События с id=" + eventId + " и initiatorId=" + userId + " не найдено");
+//        }
+//
+//        List<RequestDto> requests = requestService.getAllRequestsEventId(eventId);
+//        int limit = event.getParticipantLimit();
+//
+//        if (updateRequest.getStatus() == UpdateRequestState.REJECTED) {
+//            return rejectRequests(event, requests, updateRequest);
+//        } else {
+//            if ((limit == 0 || !event.isRequestModeration())) {
+//                return confirmAllRequests(event, requests, updateRequest);
+//            } else {
+//                return confirmRequests(event, requests, updateRequest);
+//            }
+//        }
+//    }
 
     @Transactional
     public List<EventFullDto> getEventsAdmin(EventParam p) {
@@ -325,7 +333,7 @@ public class EventServiceImpl implements EventService{
         List<Long> users = p.getUsers();
         List<String> states = p.getStates();
         List<Long> categories = p.getCategories();
-        LocalDateTime rangeStart  = p.getRangeStart();
+        LocalDateTime rangeStart = p.getRangeStart();
         LocalDateTime rangeEnd = p.getRangeEnd();
         int from = p.getFrom();
         int size = p.getSize();
@@ -376,7 +384,7 @@ public class EventServiceImpl implements EventService{
         typedQuery.setMaxResults(size);
         resultEvents = typedQuery.getResultList();
 
-        Map<Integer, Long> idViewsMap = statsClient.getIdViews(resultEvents.stream().map(Event::getId).collect(Collectors.toList()));
+        Map<Long, Long> idViewsMap = StatsClient.getMapIdViews(resultEvents.stream().map(Event::getId).collect(Collectors.toList()));
 
         return resultEvents.stream()
                 .map(e -> EventMapper.toFullDto(e, idViewsMap.getOrDefault(e.getId(), 0L)))
@@ -388,7 +396,7 @@ public class EventServiceImpl implements EventService{
     public List<EventShortDto> getEvents(EventParam p) {
         String text = p.getText();
         List<Long> categories = p.getCategories();
-        LocalDateTime rangeStart  = p.getRangeStart();
+        LocalDateTime rangeStart = p.getRangeStart();
         LocalDateTime rangeEnd = p.getRangeEnd();
         Boolean paid = p.getPaid();
         Boolean onlyAvailable = p.getOnlyAvailable();
@@ -401,7 +409,7 @@ public class EventServiceImpl implements EventService{
         Root<Event> eventRoot = criteriaQuery.from(Event.class);
         criteriaQuery.select(eventRoot);
 
-        List<Event> resultEvents;
+        List<Event> resultEvents = List.of();
         Predicate complexPredicate;
         if (rangeStart != null && rangeEnd != null) {
             complexPredicate
@@ -457,9 +465,9 @@ public class EventServiceImpl implements EventService{
         endpointHitDto.setTimestamp(LocalDateTime.now().format(TIME_FORMAT));
         endpointHitDto.setUri(request.getRequestURI());
 
-        statsClient.postHit(endpointHitDto);
+        StatsClient.postHit(endpointHitDto);
 
-        Map<Integer, Long> idViews = statsClient.getIdViews(resultEvents.stream().map(Event::getId).collect(Collectors.toList()));
+        Map<Long, Long> idViews = StatsClient.getMapIdViews(resultEvents.stream().map(Event::getId).collect(Collectors.toList()));
 
         Comparator<EventShortDto> comparator;
         if (sort != null && sort.equals("EVENT_DATE")) {
@@ -473,7 +481,7 @@ public class EventServiceImpl implements EventService{
                 .collect(Collectors.toList());
     }
 
-    public Set<EventFullDto> getEventsByIdSet(Set<Integer> eventIds) {
+    public Set<EventFullDto> getEventsByIdSet(Set<Long> eventIds) {
         if (eventIds == null || eventIds.isEmpty()) {
             return new HashSet<>();
         }
@@ -482,104 +490,95 @@ public class EventServiceImpl implements EventService{
         if (eventList == null || eventList.isEmpty()) {
             return new HashSet<>();
         }
-        Map<Integer, Long> idViews = statsClient.getIdViews(eventList.stream().map(Event::getId).collect(Collectors.toList()));
+        Map<Long, Long> idViews = StatsClient.getMapIdViews(eventList.stream().map(Event::getId).collect(Collectors.toList()));
 
         return eventList.stream()
                 .map(e -> EventMapper.toFullDto(e, idViews.getOrDefault(e.getId(), 0L)))
                 .collect(Collectors.toSet());
     }
 
-
-    public Set<Event> getEventsByIds(Set<Integer> eventIds) {
-        if (eventIds == null || eventIds.isEmpty()) {
-            return new HashSet<>();
-        }
-        List<Event> eventList = eventJpaRepository.findEventsWIthUsersByIdSet(eventIds);
-        return new HashSet<>(eventList);
-    }
-
-    @Transactional
-    private EventRequestStatusUpdateResult rejectRequests(Event event, List<RequestDto> requests, EventRequestStatusUpdateRequest updateRequest) {
-        EventRequestStatusUpdateResult updateResult = new EventRequestStatusUpdateResult();
-        Map<Integer, RequestDto> prDtoMap = requests.stream()
-                .collect(Collectors.toMap(RequestDto::getId, e -> e));
-        for (int id : updateRequest.getRequestIds()) {
-            RequestDto prDto = prDtoMap.get(id);
-            if (prDto == null) {
-                throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
-            }
-            if (prDto.getStatus().equals(RequestStatus.PENDING.name())) {
-                prDto.setStatus(RequestStatus.REJECTED.toString());
-                updateResult.getRejectedRequests().add(prDto);
-            } else {
-                throw new CreateConditionException("Нельзя отклонить уже обработанную заявку id=" + id);
-            }
-        }
-        requestService.updateAll(updateResult.getRejectedRequests(), event);
-        return updateResult;
-    }
+//    @Transactional
+//    private EventRequestStatusUpdateResult rejectRequests(Event event, List<RequestDto> requests, EventRequestStatusUpdateRequest updateRequest) {
+//        EventRequestStatusUpdateResult updateResult = new EventRequestStatusUpdateResult();
+//        Map<Integer, RequestDto> prDtoMap = requests.stream()
+//                .collect(Collectors.toMap(RequestDto::getId, e -> e));
+//        for (int id : updateRequest.getRequestIds()) {
+//            RequestDto prDto = prDtoMap.get(id);
+//            if (prDto == null) {
+//                throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
+//            }
+//            if (prDto.getStatus().equals(RequestStatus.PENDING.name())) {
+//                prDto.setStatus(RequestStatus.REJECTED.toString());
+//                updateResult.getRejectedRequests().add(prDto);
+//            } else {
+//                throw new CreateConditionException("Нельзя отклонить уже обработанную заявку id=" + id);
+//            }
+//        }
+//        requestService.updateAll(updateResult.getRejectedRequests(), event);
+//        return updateResult;
+//    }
 
 
-    @Transactional
-    private EventRequestStatusUpdateResult confirmAllRequests(Event event, List<RequestDto> requests, EventRequestStatusUpdateRequest updateRequest) {
-        int confirmedRequestsAmount = event.getConfirmedRequests();
-        EventRequestStatusUpdateResult updateResult = new EventRequestStatusUpdateResult();
-        Map<Integer, RequestDto> prDtoMap = requests.stream()
-                .collect(Collectors.toMap(RequestDto::getId, e -> e));
-        for (int id : updateRequest.getRequestIds()) {
-            RequestDto prDto = prDtoMap.get(id);
-            if (prDto == null) {
-                throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
-            }
-            if (prDto.getStatus().equals(RequestStatus.PENDING.name())) {
-                prDto.setStatus(RequestStatus.CONFIRMED.toString());
-                confirmedRequestsAmount++;
-                event.setConfirmedRequests(confirmedRequestsAmount);
-                eventJpaRepository.save(event);
-            } else {
-                throw new CreateConditionException("Нельзя подтвердить уже обработанную заявку id=" + id);
-            }
-        }
-        requestService.updateAll(updateResult.getConfirmedRequests(), event);
-        return updateResult;
-    }
+//    @Transactional
+//    private EventRequestStatusUpdateResult confirmAllRequests(Event event, List<RequestDto> requests, EventRequestStatusUpdateRequest updateRequest) {
+//        int confirmedRequestsAmount = event.getConfirmedRequests();
+//        EventRequestStatusUpdateResult updateResult = new EventRequestStatusUpdateResult();
+//        Map<Integer, RequestDto> prDtoMap = requests.stream()
+//                .collect(Collectors.toMap(RequestDto::getId, e -> e));
+//        for (int id : updateRequest.getRequestIds()) {
+//            RequestDto prDto = prDtoMap.get(id);
+//            if (prDto == null) {
+//                throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
+//            }
+//            if (prDto.getStatus().equals(RequestStatus.PENDING.name())) {
+//                prDto.setStatus(RequestStatus.CONFIRMED.toString());
+//                confirmedRequestsAmount++;
+//                event.setConfirmedRequests(confirmedRequestsAmount);
+//                eventJpaRepository.save(event);
+//            } else {
+//                throw new CreateConditionException("Нельзя подтвердить уже обработанную заявку id=" + id);
+//            }
+//        }
+//        requestService.updateAll(updateResult.getConfirmedRequests(), event);
+//        return updateResult;
+//    }
 
 
-    @Transactional
-    private EventRequestStatusUpdateResult confirmRequests(Event event, List<RequestDto> requests, EventRequestStatusUpdateRequest updateRequest) {
-        int confirmedRequestsAmount = event.getConfirmedRequests();
-        int limit = event.getParticipantLimit();
-        boolean limitAchieved = false;
-        EventRequestStatusUpdateResult updateResult = new EventRequestStatusUpdateResult();
-        Map<Integer, RequestDto> prDtoMap = requests.stream()
-                .collect(Collectors.toMap(RequestDto::getId, e -> e));
-        for (int id : updateRequest.getRequestIds()) {
-            limitAchieved = confirmedRequestsAmount >= limit;
-            RequestDto prDto = prDtoMap.get(id);
-            if (prDto == null) {
-                throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
-            }
-            if (prDto.getStatus().equals(RequestStatus.PENDING.name())) {
-                if (limitAchieved) {
-                    prDto.setStatus(RequestStatus.REJECTED.toString());
-                    requestService.update(prDto, event);
-                    updateResult.getRejectedRequests().add(prDto);
-                } else {
-                    prDto.setStatus(RequestStatus.CONFIRMED.toString());
-                    confirmedRequestsAmount++;
-                    event.setConfirmedRequests(confirmedRequestsAmount);
-                    eventJpaRepository.save(event);
-                    updateResult.getConfirmedRequests().add(prDto);
-                }
-            } else {
-                throw new CreateConditionException("Нельзя подтвердить уже обработанную заявку id=" + id);
-            }
-        }
-        requestService.updateAll(updateResult.getRejectedRequests(), event);
-        requestService.updateAll(updateResult.getConfirmedRequests(), event);
-        if (limitAchieved) {
-            throw new CreateConditionException("Превышен лимит на кол-во участников. Лимит = " + limit + ", кол-во подтвержденных заявок =" + confirmedRequestsAmount);
-        }
-        return updateResult;
-    }
+//    @Transactional
+//    private EventRequestStatusUpdateResult confirmRequests(Event event, List<RequestDto> requests, EventRequestStatusUpdateRequest updateRequest) {
+//        int confirmedRequestsAmount = event.getConfirmedRequests();
+//        int limit = event.getParticipantLimit();
+//        boolean limitAchieved = false;
+//        EventRequestStatusUpdateResult updateResult = new EventRequestStatusUpdateResult();
+//        Map<Integer, RequestDto> prDtoMap = requests.stream()
+//                .collect(Collectors.toMap(RequestDto::getId, e -> e));
+//        for (int id : updateRequest.getRequestIds()) {
+//            limitAchieved = confirmedRequestsAmount >= limit;
+//            RequestDto prDto = prDtoMap.get(id);
+//            if (prDto == null) {
+//                throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
+//            }
+//            if (prDto.getStatus().equals(RequestStatus.PENDING.name())) {
+//                if (limitAchieved) {
+//                    prDto.setStatus(RequestStatus.REJECTED.toString());
+//                    requestService.update(prDto, event);
+//                    updateResult.getRejectedRequests().add(prDto);
+//                } else {
+//                    prDto.setStatus(RequestStatus.CONFIRMED.toString());
+//                    confirmedRequestsAmount++;
+//                    event.setConfirmedRequests(confirmedRequestsAmount);
+//                    eventJpaRepository.save(event);
+//                    updateResult.getConfirmedRequests().add(prDto);
+//                }
+//            } else {
+//                throw new CreateConditionException("Нельзя подтвердить уже обработанную заявку id=" + id);
+//            }
+//        }
+//        requestService.updateAll(updateResult.getRejectedRequests(), event);
+//        requestService.updateAll(updateResult.getConfirmedRequests(), event);
+//        if (limitAchieved) {
+//            throw new CreateConditionException("Превышен лимит на кол-во участников. Лимит = " + limit + ", кол-во подтвержденных заявок =" + confirmedRequestsAmount);
+//        }
+//        return updateResult;
+//    }
 }

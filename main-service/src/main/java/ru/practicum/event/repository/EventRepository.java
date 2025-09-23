@@ -12,13 +12,13 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("SELECT e " +
             "FROM Event AS e " +
             "WHERE e.category.id = ?1")
-    List<Event> findByCategoryId(int catId);
+    List<Event> findByCategoryId(long catId);
 
 
     @Query("SELECT e " +
             "FROM Event as e " +
             "WHERE initiator.id = ?1")
-    List<Event> getAllByUser(int userId, PageRequest page);
+    List<Event> getAllByUser(long userId, PageRequest page);
 
     @Query("SELECT e " +
             "FROM Event as e " +
@@ -26,11 +26,11 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "AND initiator.id = ?2")
     Event getByIdAndUserId(int eventId, int userId);
 
-    List<Event> findByIdIn(Set<Integer> eventIds);
+    List<Event> findByIdIn(Set<Long> eventIds);
 
     @Query("SELECT e " +
             "FROM Event as e " +
             "JOIN FETCH e.initiator " +
             "WHERE e.id in ?1 ")
-    List<Event> findEventsWIthUsersByIdSet(Set<Integer> eventIds);
+    List<Event> findEventsWIthUsersByIdSet(Set<Long> eventIds);
 }
