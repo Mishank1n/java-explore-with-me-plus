@@ -5,9 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import ru.practicum.category.model.Category;
-import ru.practicum.category.model.dto.CategoryRequest;
 import ru.practicum.user.model.User;
-import ru.practicum.user.model.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 
@@ -69,8 +67,4 @@ public class Event {
 
     @Column(name = "title")
     private String title;
-
-    @Column(name = "views")
-    private int views;
-
 }

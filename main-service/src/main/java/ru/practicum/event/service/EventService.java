@@ -2,11 +2,12 @@ package ru.practicum.event.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-
+import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventParam;
 import ru.practicum.event.model.dto.*;
 
 import java.util.List;
+import java.util.Set;
 
 public interface EventService {
     List<EventShortDto> getEvents(EventParam p);
@@ -14,7 +15,7 @@ public interface EventService {
     List<EventFullDto> getEventsAdmin(EventParam p);
 
     EventFullDto getEvent(int eventId,
-                                 HttpServletRequest request);
+                          HttpServletRequest request);
 
     EventFullDto create(NewEventDto newEventDto, int userId);
 
@@ -24,9 +25,11 @@ public interface EventService {
 
     EventFullDto updateEvent(int userId, int eventId, UpdateEventUserRequest updateRequest);
 
-    List<RequestDto> getParticipationInfo(int userId, int eventId);
+//    List<RequestDto> getParticipationInfo(int userId, int eventId);
 
-    EventRequestStatusUpdateResult updateStatus(int userId, int eventId, EventRequestStatusUpdateRequest statusUpdateRequest);
+//    EventRequestStatusUpdateResult updateStatus(int userId, int eventId, EventRequestStatusUpdateRequest statusUpdateRequest);
 
     EventFullDto updateAdminEvent(long eventId, UpdateEventAdminRequest adminRequest);
+
+    Set<Event> getEventsByIds(Set<Long> eventIds);
 }
