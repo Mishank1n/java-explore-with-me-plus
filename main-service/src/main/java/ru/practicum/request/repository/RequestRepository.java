@@ -1,0 +1,25 @@
+package ru.practicum.request.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.request.model.Request;
+
+import java.util.List;
+
+public interface RequestRepository extends JpaRepository<Request, Long> {
+
+    List<Request> findByRequester(Long requester);
+
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = "UPDATE requests SET status = 'REJECTED' WHERE id =: requestId ")
+    void updateToRejected(@Param("requestId") Long requestId);
+
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = "UPDATE requests SET status = 'CONFIRMED' WHERE id =: requestId ")
+    void updateToConfirmed(@Param("requestId") Long requestId);
+}

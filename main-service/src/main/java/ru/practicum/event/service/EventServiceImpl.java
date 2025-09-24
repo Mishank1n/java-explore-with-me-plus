@@ -23,6 +23,8 @@ import ru.practicum.exception.BadParameterException;
 import ru.practicum.exception.CreateConditionException;
 import ru.practicum.exception.DataConflictException;
 import ru.practicum.exception.NotFoundException;
+import ru.practicum.request.model.RequestStatus;
+import ru.practicum.request.service.RequestService;
 import ru.practicum.user.model.User;
 import ru.practicum.user.model.mapper.UserMapper;
 import ru.practicum.user.service.UserService;
