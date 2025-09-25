@@ -416,9 +416,6 @@ public class EventServiceImpl implements EventService {
         Root<Event> eventRoot = criteriaQuery.from(Event.class);
         criteriaQuery.select(eventRoot);
 
-        // ❌ ОШИБКА: resultEvents инициализирован пустым списком
-        // List<Event> resultEvents = List.of(); // УДАЛИТЬ ЭТУ СТРОКУ
-
         Predicate complexPredicate;
         if (rangeStart != null && rangeEnd != null) {
             complexPredicate = criteriaBuilder.between(eventRoot.get("eventDate").as(LocalDateTime.class), rangeStart, rangeEnd);
@@ -464,8 +461,7 @@ public class EventServiceImpl implements EventService {
         typedQuery.setFirstResult(from);
         typedQuery.setMaxResults(size);
 
-        // ✅ ИСПРАВЛЕНИЕ: Получаем результаты из запроса
-        List<Event> resultEvents = typedQuery.getResultList(); // ДОБАВИТЬ ЭТУ СТРОКУ
+        List<Event> resultEvents = typedQuery.getResultList();
 
         StatisticsPostResponseDto endpointHitDto = new StatisticsPostResponseDto();
         endpointHitDto.setApp("ewm-main-event-service");

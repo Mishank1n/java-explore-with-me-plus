@@ -1,6 +1,7 @@
 package ru.practicum.request.controller;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.request.model.dto.RequestDto;
 import ru.practicum.request.service.RequestService;
@@ -20,6 +21,7 @@ public class RequestController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public RequestDto create(@PathVariable("userId") Long userId, @RequestParam("eventId") Long eventId) {
         return service.create(userId, eventId);
     }
