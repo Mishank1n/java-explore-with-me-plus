@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -61,6 +62,9 @@ public class EventServiceImpl implements EventService {
         Category category = CategoryMapper.toCategory(categoryService.getById(newEventDto.getCategory()));
         User user = UserMapper.toUser(userService.getUserById(userId));
 
+        if (newEventDto.getDescription().trim().isEmpty() || newEventDto.getAnnotation().trim().isEmpty() || newEventDto.getParticipantLimit()<0) {
+            throw new ValidationException("Описание пустое");
+        }
         Event event = EventMapper.toEvent(newEventDto, category, user);
         Event savedEvent = eventJpaRepository.save(event);
 
@@ -332,7 +336,6 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     public List<EventFullDto> getEventsAdmin(EventParam p) {
-
         List<Long> users = p.getUsers();
         List<String> states = p.getStates();
         List<Long> categories = p.getCategories();
@@ -407,53 +410,52 @@ public class EventServiceImpl implements EventService {
         int size = p.getSize();
         String sort = p.getSort();
         HttpServletRequest request = p.getRequest();
+
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Event> criteriaQuery = criteriaBuilder.createQuery(Event.class);
         Root<Event> eventRoot = criteriaQuery.from(Event.class);
         criteriaQuery.select(eventRoot);
 
-        List<Event> resultEvents = List.of();
+        // ❌ ОШИБКА: resultEvents инициализирован пустым списком
+        // List<Event> resultEvents = List.of(); // УДАЛИТЬ ЭТУ СТРОКУ
+
         Predicate complexPredicate;
         if (rangeStart != null && rangeEnd != null) {
-            complexPredicate
-                    = criteriaBuilder.between(eventRoot.get("eventDate").as(LocalDateTime.class), rangeStart, rangeEnd);
+            complexPredicate = criteriaBuilder.between(eventRoot.get("eventDate").as(LocalDateTime.class), rangeStart, rangeEnd);
         } else {
-            complexPredicate
-                    = criteriaBuilder.between(eventRoot.get("eventDate").as(LocalDateTime.class), LocalDateTime.now(), LocalDateTime.of(9999, 1, 1, 1, 1, 1));
+            complexPredicate = criteriaBuilder.between(eventRoot.get("eventDate").as(LocalDateTime.class), LocalDateTime.now(), LocalDateTime.of(9999, 1, 1, 1, 1, 1));
         }
+
         if (text != null && !text.isBlank()) {
             String decodeText = URLDecoder.decode(text, StandardCharsets.UTF_8);
 
             Expression<String> annotationLowerCase = criteriaBuilder.lower(eventRoot.get("annotation"));
             Expression<String> descriptionLowerCase = criteriaBuilder.lower(eventRoot.get("description"));
-            Predicate predicateForAnnotation
-                    = criteriaBuilder.like(annotationLowerCase, "%" + decodeText.toLowerCase() + "%");
-            Predicate predicateForDescription
-                    = criteriaBuilder.like(descriptionLowerCase, "%" + decodeText.toLowerCase() + "%");
+            Predicate predicateForAnnotation = criteriaBuilder.like(annotationLowerCase, "%" + decodeText.toLowerCase() + "%");
+            Predicate predicateForDescription = criteriaBuilder.like(descriptionLowerCase, "%" + decodeText.toLowerCase() + "%");
             Predicate predicateForText = criteriaBuilder.or(predicateForAnnotation, predicateForDescription);
             complexPredicate = criteriaBuilder.and(complexPredicate, predicateForText);
         }
+
         if (categories != null && !categories.isEmpty()) {
             if (categories.stream().anyMatch(c -> c <= 0)) {
                 throw new BadParameterException("Id категории должен быть > 0");
             }
-            Predicate predicateForCategoryId
-                    = eventRoot.get("category").get("id").in(categories);
+            Predicate predicateForCategoryId = eventRoot.get("category").get("id").in(categories);
             complexPredicate = criteriaBuilder.and(complexPredicate, predicateForCategoryId);
         }
-        if (paid != null) {
-            Predicate predicateForPaid
-                    = criteriaBuilder.equal(eventRoot.get("paid"), paid);
-            complexPredicate = criteriaBuilder.and(complexPredicate, predicateForPaid);
 
+        if (paid != null) {
+            Predicate predicateForPaid = criteriaBuilder.equal(eventRoot.get("paid"), paid);
+            complexPredicate = criteriaBuilder.and(complexPredicate, predicateForPaid);
         }
+
         if (onlyAvailable != null) {
-            Predicate predicateForOnlyAvailable
-                    = criteriaBuilder.lt(eventRoot.get("confirmedRequests"), eventRoot.get("participantLimit"));
+            Predicate predicateForOnlyAvailable = criteriaBuilder.lt(eventRoot.get("confirmedRequests"), eventRoot.get("participantLimit"));
             complexPredicate = criteriaBuilder.and(complexPredicate, predicateForOnlyAvailable);
         }
-        Predicate predicateForPublished
-                = criteriaBuilder.equal(eventRoot.get("state"), EventState.PUBLISHED);
+
+        Predicate predicateForPublished = criteriaBuilder.equal(eventRoot.get("state"), EventState.PUBLISHED);
         complexPredicate = criteriaBuilder.and(complexPredicate, predicateForPublished);
 
         criteriaQuery.where(complexPredicate);
@@ -461,6 +463,9 @@ public class EventServiceImpl implements EventService {
         TypedQuery<Event> typedQuery = entityManager.createQuery(criteriaQuery);
         typedQuery.setFirstResult(from);
         typedQuery.setMaxResults(size);
+
+        // ✅ ИСПРАВЛЕНИЕ: Получаем результаты из запроса
+        List<Event> resultEvents = typedQuery.getResultList(); // ДОБАВИТЬ ЭТУ СТРОКУ
 
         StatisticsPostResponseDto endpointHitDto = new StatisticsPostResponseDto();
         endpointHitDto.setApp("ewm-main-event-service");
@@ -478,6 +483,7 @@ public class EventServiceImpl implements EventService {
         } else {
             comparator = Comparator.comparing(EventShortDto::getViews);
         }
+
         return resultEvents.stream()
                 .map(e -> EventMapper.toShortDto(e, idViews.getOrDefault(e.getId(), 0L)))
                 .sorted(comparator)
