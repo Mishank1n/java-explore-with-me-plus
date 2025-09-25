@@ -1,9 +1,7 @@
 package ru.practicum.request.service;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.event.model.Event;
@@ -16,7 +14,6 @@ import ru.practicum.request.model.dto.RequestDto;
 import ru.practicum.request.model.mapper.RequestMapper;
 import ru.practicum.request.repository.RequestRepository;
 import ru.practicum.user.model.User;
-//import ru.practicum.user.model.mapper.UserMapper;
 import ru.practicum.user.model.mapper.UserMapper;
 import ru.practicum.user.repository.UserRepository;
 import ru.practicum.user.service.UserService;
