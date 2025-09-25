@@ -23,4 +23,9 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     @Transactional
     @Query(nativeQuery = true, value = "UPDATE requests SET status = 'CONFIRMED' WHERE id = :requestId ")
     void updateToConfirmed(@Param("requestId") Long requestId);
+
+    @Query("SELECT pr " +
+            "FROM Request as pr " +
+            "WHERE pr.event.id = ?1")
+    List<Request> findAllByEventId(Long eventId);
 }

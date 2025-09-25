@@ -13,4 +13,6 @@ public interface UserService {
     void deleteUser(Long id);
 
     UserDto getUserById(long userId);
+
+    List<UserDto> getAllUsers(List<Long> ids);
 }

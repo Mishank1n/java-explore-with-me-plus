@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RequestDto {
-    LocalDateTime created;
+    String created;
     Long event;
     Long id;
     Long requester;

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.PaginationException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.user.model.User;
@@ -12,6 +13,7 @@ import ru.practicum.user.model.dto.UserRequest;
 import ru.practicum.user.model.mapper.UserMapper;
 import ru.practicum.user.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +27,7 @@ public class UserServiceImp implements UserService {
 
         User currentUser = userRepository.getByEmail(userRequest.getEmail());
         if (currentUser != null) {
-            throw new RuntimeException("User already exists");
+            throw new ConflictException("User already exists");
         }
         User newUser = userRepository.save(UserMapper.toUser(userRequest));
         return UserMapper.toUserDto(newUser);
@@ -70,5 +72,18 @@ public class UserServiceImp implements UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с id= " + userId + " не найден"));
 
         return UserMapper.toUserDto(user);
+    }
+
+    @Override
+    public List<UserDto> getAllUsers(List<Long> ids) {
+        List<User> users; //список пользователей
+        if (ids == null || ids.isEmpty()) { //если список id пустой, то Возвращаем пустой списко
+            return new ArrayList<>();
+        } else {
+            users = userRepository.findAllByIdIn(ids);
+        }
+        return users.stream()
+                .map(UserMapper::toUserDto)
+                .collect(Collectors.toList());
     }
 }

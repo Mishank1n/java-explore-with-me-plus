@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventParam;
 import ru.practicum.event.model.dto.*;
+import ru.practicum.request.model.dto.RequestDto;
 
 import java.util.List;
 import java.util.Set;
@@ -25,9 +26,9 @@ public interface EventService {
 
     EventFullDto updateEvent(int userId, int eventId, UpdateEventUserRequest updateRequest);
 
-//    List<RequestDto> getParticipationInfo(int userId, int eventId);
+    List<RequestDto> getParticipationInfo(Long userId, Long eventId);
 
-//    EventRequestStatusUpdateResult updateStatus(int userId, int eventId, EventRequestStatusUpdateRequest statusUpdateRequest);
+    EventRequestStatusUpdateResult updateStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest statusUpdateRequest);
 
     EventFullDto updateAdminEvent(long eventId, UpdateEventAdminRequest adminRequest);
 
