@@ -15,17 +15,17 @@ public class RequestController {
     private final RequestService service;
 
     @GetMapping
-    public List<RequestDto> getAll(@PathVariable("userId") Long userId){
+    public List<RequestDto> getAll(@PathVariable("userId") Long userId) {
         return service.getAll(userId);
     }
 
     @PostMapping
-    public RequestDto create(@PathVariable("userId") Long userId, @RequestParam("eventId") Long eventId){
+    public RequestDto create(@PathVariable("userId") Long userId, @RequestParam("eventId") Long eventId) {
         return service.create(userId, eventId);
     }
 
     @PatchMapping
-    public RequestDto cancelRequest(@PathVariable("userId") Long userId, @RequestParam("requestId") Long requestId){
+    public RequestDto cancelRequest(@PathVariable("userId") Long userId, @RequestParam("requestId") Long requestId) {
         return service.cancelRequest(userId, requestId);
     }
 

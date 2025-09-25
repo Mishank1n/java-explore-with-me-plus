@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class RequestServiceImp implements RequestService{
+public class RequestServiceImp implements RequestService {
 
     private final EntityManager entityManager;
     private final RequestRepository repository;

@@ -12,7 +12,7 @@ public class RequestMapper {
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public static RequestDto toRequestDto(Request request){
+    public static RequestDto toRequestDto(Request request) {
         RequestDto dto = new RequestDto();
         dto.setCreated(request.getCreated().format(TIME_FORMAT));
         dto.setEvent(request.getEvent().getId());
