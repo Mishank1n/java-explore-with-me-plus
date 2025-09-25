@@ -510,7 +510,7 @@ public class EventServiceImpl implements EventService {
             if (prDto == null) {
                 throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
             }
-            if (prDto.getStatus().equals(RequestStatus.PENDING.name())) {
+            if (prDto.getStatus().equals(RequestStatus.PENDING)) {
                 prDto.setStatus(RequestStatus.REJECTED);
                 updateResult.getRejectedRequests().add(prDto);
             } else {
@@ -533,7 +533,7 @@ public class EventServiceImpl implements EventService {
             if (prDto == null) {
                 throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
             }
-            if (prDto.getStatus().equals(RequestStatus.PENDING.name())) {
+            if (prDto.getStatus().equals(RequestStatus.PENDING)) {
                 prDto.setStatus(RequestStatus.CONFIRMED);
                 confirmedRequestsAmount++;
                 event.setConfirmedRequests(confirmedRequestsAmount);
@@ -561,7 +561,7 @@ public class EventServiceImpl implements EventService {
             if (prDto == null) {
                 throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
             }
-            if (prDto.getStatus().equals(RequestStatus.PENDING.name())) {
+            if (prDto.getStatus().equals(RequestStatus.PENDING)) {
                 if (limitAchieved) {
                     prDto.setStatus(RequestStatus.REJECTED);
                     requestService.update(prDto, event);
