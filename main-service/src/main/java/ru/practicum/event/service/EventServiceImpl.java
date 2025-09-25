@@ -505,7 +505,7 @@ public class EventServiceImpl implements EventService {
         EventRequestStatusUpdateResult updateResult = new EventRequestStatusUpdateResult();
         Map<Long, RequestDto> prDtoMap = requests.stream()
                 .collect(Collectors.toMap(RequestDto::getId, e -> e));
-        for (int id : updateRequest.getRequestIds()) {
+        for (long id : updateRequest.getRequestIds()) {
             RequestDto prDto = prDtoMap.get(id);
             if (prDto == null) {
                 throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
@@ -528,7 +528,7 @@ public class EventServiceImpl implements EventService {
         EventRequestStatusUpdateResult updateResult = new EventRequestStatusUpdateResult();
         Map<Long, RequestDto> prDtoMap = requests.stream()
                 .collect(Collectors.toMap(RequestDto::getId, e -> e));
-        for (int id : updateRequest.getRequestIds()) {
+        for (long id : updateRequest.getRequestIds()) {
             RequestDto prDto = prDtoMap.get(id);
             if (prDto == null) {
                 throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
@@ -555,7 +555,7 @@ public class EventServiceImpl implements EventService {
         EventRequestStatusUpdateResult updateResult = new EventRequestStatusUpdateResult();
         Map<Long, RequestDto> prDtoMap = requests.stream()
                 .collect(Collectors.toMap(RequestDto::getId, e -> e));
-        for (int id : updateRequest.getRequestIds()) {
+        for (long id : updateRequest.getRequestIds()) {
             limitAchieved = confirmedRequestsAmount >= limit;
             RequestDto prDto = prDtoMap.get(id);
             if (prDto == null) {
