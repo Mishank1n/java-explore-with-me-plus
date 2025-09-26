@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.request.model.Request;
+import ru.practicum.user.model.User;
 
 import java.util.List;
 
@@ -28,4 +29,6 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "FROM Request as pr " +
             "WHERE pr.event.id = ?1")
     List<Request> findAllByEventId(Long eventId);
+
+    Request findByIdAndRequester(Long id, User requester);
 }

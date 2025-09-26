@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.event.model.Event;
+import ru.practicum.event.model.EventState;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.BadParameterException;
+import ru.practicum.exception.CreateConditionException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.request.model.Request;
 import ru.practicum.request.model.RequestStatus;
@@ -45,7 +47,27 @@ public class RequestServiceImp implements RequestService {
     @Override
     public RequestDto create(Long userId, Long eventId) {
         User requestor = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.format("User with id = %d not found", userId)));
+
+        Request duplicatedRequest = requestRepository.findByIdAndRequester(eventId, requestor);
+        if (duplicatedRequest != null) {
+            throw new CreateConditionException("Запрос от пользователя id=" + userId + " на событие c id=" + eventId + " уже существует");
+        }
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
+        /*инициатор события не может добавить запрос на участие в своём событии */
+        if (event.getInitiator().getId() == userId) { //если событие существует и создатель совпадает по id с пользователем
+            throw new CreateConditionException("Пользователь не может создавать запрос на участие в своем событии");
+        }
+        /*нельзя участвовать в неопубликованном событии*/
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new CreateConditionException("Событие с id=" + eventId + " не опубликовано");
+        }
+        /*нельзя участвовать при превышении лимита заявок*/
+        if (event.getParticipantLimit() != 0) { //если ==0, то кол-во участников неограничено
+            if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
+                throw new CreateConditionException("У события с id=" + eventId + " достигнут лимит участников " + event.getParticipantLimit());
+            }
+        }
+
         Request request = new Request();
         request.setRequester(requestor);
         request.setEvent(event);
@@ -82,30 +104,28 @@ public class RequestServiceImp implements RequestService {
 
     @Transactional
     public void updateAll(List<RequestDto> requestDtoList, Event event) {
-        /*подготовка данных для массового преобразоывания списка ParticipationRequestDto в ParticipationRequest*/
         /*Собираем пользователей в мапу <userId, User>*/
         List<Long> userIds = requestDtoList.stream()
                 .map(RequestDto::getRequester)
-                .collect(Collectors.toList()); //список id пользователей - авторов запросов на участие
+                .collect(Collectors.toList());
         Map<Long, User> users = userService.getAllUsers(userIds).stream()
                 .map(UserMapper::toUser)
-                .collect(Collectors.toMap(User::getId, u -> u)); //мапа <userId, User> пользователей - авторов запросов на участие
-        /*делаем две мапы, которе требуются для маппинга из ParticipationRequestDto в ParticipationRequest*/
+                .collect(Collectors.toMap(User::getId, u -> u));
         Map<Long, RequestDto> prDtoMap = requestDtoList.stream()
-                .collect(Collectors.toMap(RequestDto::getId, e -> e)); //мапа <id запроса,сам запрос на участие>
+                .collect(Collectors.toMap(RequestDto::getId, e -> e));
         Map<Long, User> requestUserMap = requestDtoList.stream()
-                .collect(Collectors.toMap(RequestDto::getId, pr -> users.get(pr.getRequester()))); //мапа <id запроса, User>
+                .collect(Collectors.toMap(RequestDto::getId, pr -> users.get(pr.getRequester())));
 
         List<Request> prList = requestDtoList.stream()
                 .map(pr -> RequestMapper.toRequest(pr, event, requestUserMap.get(pr.getId())))
-                .collect(Collectors.toList()); //преобразовали список DTO в список непосредственно запросов на участие.
+                .collect(Collectors.toList());
 
-        requestRepository.saveAll(prList); //сохраняем в БД обновленную информацию обо всех запросах на участие
+        requestRepository.saveAll(prList);
     }
 
     @Transactional
     public void update(RequestDto prDto, Event event) {
-        User user = UserMapper.toUser(userService.getUserById(prDto.getRequester())); //пользователь запрашивающий участие
-        requestRepository.save(RequestMapper.toRequest(prDto, event, user)); //сохраняем обновленную информацию в БД
+        User user = UserMapper.toUser(userService.getUserById(prDto.getRequester()));
+        requestRepository.save(RequestMapper.toRequest(prDto, event, user));
     }
 }
