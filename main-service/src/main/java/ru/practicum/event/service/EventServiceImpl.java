@@ -177,6 +177,9 @@ public class EventServiceImpl implements EventService {
             event.setPaid(updateRequest.getPaid());
         }
         if (updateRequest.getParticipantLimit() != null) {
+            if (updateRequest.getParticipantLimit() < 0) {
+                throw new ValidationException("Participant limit cannot be negative");
+            }
             event.setParticipantLimit(updateRequest.getParticipantLimit());
         }
         if (updateRequest.getRequestModeration() != null) {
