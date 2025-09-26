@@ -9,6 +9,7 @@ import ru.practicum.category.model.dto.CategoryDto;
 import ru.practicum.category.model.dto.CategoryRequest;
 import ru.practicum.category.model.mapper.CategoryMapper;
 import ru.practicum.category.repository.CategoryRepository;
+import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.ConstraintException;
 import ru.practicum.exception.NotFoundException;
@@ -21,6 +22,7 @@ import java.util.Optional;
 public class CategoryServiceImp implements CategoryService {
 
     private final CategoryRepository repository;
+    private final EventRepository eventRepository;
 
     @Override
     public List<CategoryDto> getAll(Integer from, Integer size) {
@@ -63,6 +65,9 @@ public class CategoryServiceImp implements CategoryService {
         Category category = repository.findById(categoryId).orElseThrow(() ->
                 new NotFoundException(String.format("Category with id = %d was not found", categoryId))
         );
+        if (eventRepository.existsByCategory(category)) {
+            throw new ConflictException("Cannot delete category: there are events associated with this category");
+        }
         repository.deleteById(categoryId);
     }
 }
