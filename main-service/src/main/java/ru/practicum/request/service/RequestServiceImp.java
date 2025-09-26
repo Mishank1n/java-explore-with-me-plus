@@ -67,12 +67,15 @@ public class RequestServiceImp implements RequestService {
                 throw new CreateConditionException("У события с id=" + eventId + " достигнут лимит участников " + event.getParticipantLimit());
             }
         }
-
         Request request = new Request();
         request.setRequester(requestor);
         request.setEvent(event);
         request.setCreated(LocalDateTime.now());
-        request.setStatus(RequestStatus.PENDING);
+        if ((event.getParticipantLimit() == 0) || (!event.isRequestModeration())) {
+            request.setStatus(RequestStatus.CONFIRMED);
+        } else {
+            request.setStatus(RequestStatus.PENDING);
+        }
         return RequestMapper.toRequestDto(repository.save(request));
     }
 
