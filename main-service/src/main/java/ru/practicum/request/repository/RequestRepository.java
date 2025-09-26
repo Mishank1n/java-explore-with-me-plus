@@ -11,15 +11,21 @@ import java.util.List;
 
 public interface RequestRepository extends JpaRepository<Request, Long> {
 
-    List<Request> findByRequester(Long requester);
+    @Query("SELECT r FROM Request r WHERE r.requester.id = :requesterId")
+    List<Request> findByRequester(@Param("requesterId") Long requesterId);
 
     @Modifying
     @Transactional
-    @Query(nativeQuery = true, value = "UPDATE requests SET status = 'REJECTED' WHERE id =: requestId ")
+    @Query(nativeQuery = true, value = "UPDATE requests SET status = 'REJECTED' WHERE id = :requestId ")
     void updateToRejected(@Param("requestId") Long requestId);
 
     @Modifying
     @Transactional
-    @Query(nativeQuery = true, value = "UPDATE requests SET status = 'CONFIRMED' WHERE id =: requestId ")
+    @Query(nativeQuery = true, value = "UPDATE requests SET status = 'CONFIRMED' WHERE id = :requestId ")
     void updateToConfirmed(@Param("requestId") Long requestId);
+
+    @Query("SELECT pr " +
+            "FROM Request as pr " +
+            "WHERE pr.event.id = ?1")
+    List<Request> findAllByEventId(Long eventId);
 }

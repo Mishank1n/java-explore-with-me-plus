@@ -24,7 +24,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "FROM Event as e " +
             "WHERE id = ?1 " +
             "AND initiator.id = ?2")
-    Event getByIdAndUserId(int eventId, int userId);
+    Event getByIdAndUserId(long eventId, long userId);
 
     List<Event> findByIdIn(Set<Long> eventIds);
 

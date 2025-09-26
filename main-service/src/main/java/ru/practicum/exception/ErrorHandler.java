@@ -21,9 +21,9 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler({BadParameterException.class, CreateConditionException.class, DataConflictException.class})
+    @ExceptionHandler({BadParameterException.class, CreateConditionException.class, DataConflictException.class, ConflictException.class, ConstraintException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleConstraintException(ConstraintException e) {
+    public ErrorResponse handleConstraintException(final RuntimeException e) {
         return new ErrorResponse(e.getMessage());
     }
 }

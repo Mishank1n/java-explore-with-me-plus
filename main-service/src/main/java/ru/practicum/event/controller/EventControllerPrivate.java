@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.model.dto.*;
 import ru.practicum.event.service.EventService;
+import ru.practicum.request.model.dto.RequestDto;
 
 import java.util.List;
 
@@ -32,10 +33,10 @@ public class EventControllerPrivate {
         return eventDto;
     }
 
-
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public List<EventShortDto> getEventsByUser(@PathVariable(name = "userId") @Positive int userId,
-                                               @RequestParam(name = "from", defaultValue = "0") @Positive int from,
+                                               @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from,
                                                @RequestParam(name = "size", defaultValue = "10") @PositiveOrZero int size) {
         List<EventShortDto> eventShortDtos = eventService.getAllByUser(userId, from, size);
         log.info("Получен список событий пользователя с id={}", userId);
@@ -61,22 +62,22 @@ public class EventControllerPrivate {
     }
 
 
-//    @GetMapping(eventIdRequests)
-//    public List<RequestDto> getParticipationInfo(@PathVariable(name = "userId") @Positive int userId,
-//                                                 @PathVariable(name = "eventId") @Positive int eventId) {
-//        List<RequestDto> partRequestDtoList = eventService.getParticipationInfo(userId, eventId);
-//        log.info("Получена информация о запросах на учатсие в событии с Id={} пользователя с id={}", eventId, userId);
-//        return partRequestDtoList;
-//    }
-//
-//
-//    @PatchMapping(eventIdRequests)
-//    public EventRequestStatusUpdateResult updateEventStatus(@PathVariable(name = "userId") @Positive int userId,
-//                                                           @PathVariable(name = "eventId") @Positive int eventId,
-//                                                           @RequestBody EventRequestStatusUpdateRequest statusUpdateRequest) {
-//        EventRequestStatusUpdateResult updateStatusResult = eventService.updateStatus(userId, eventId, statusUpdateRequest);
-//        log.info("Обновлен статус события с Id={} пользователя с id={}. Статус = {}", eventId, userId, statusUpdateRequest.getStatus().toString());
-//        return updateStatusResult;
-//    }
+    @GetMapping(eventIdRequests)
+    public List<RequestDto> getParticipationInfo(@PathVariable(name = "userId") @Positive long userId,
+                                                 @PathVariable(name = "eventId") @Positive long eventId) {
+        List<RequestDto> partRequestDtoList = eventService.getParticipationInfo(userId, eventId);
+        log.info("Получена информация о запросах на учатсие в событии с Id={} пользователя с id={}", eventId, userId);
+        return partRequestDtoList;
+    }
+
+
+    @PatchMapping(eventIdRequests)
+    public EventRequestStatusUpdateResult updateEventStatus(@PathVariable(name = "userId") @Positive long userId,
+                                                           @PathVariable(name = "eventId") @Positive long eventId,
+                                                           @RequestBody EventRequestStatusUpdateRequest statusUpdateRequest) {
+        EventRequestStatusUpdateResult updateStatusResult = eventService.updateStatus(userId, eventId, statusUpdateRequest);
+        log.info("Обновлен статус события с Id={} пользователя с id={}. Статус = {}", eventId, userId, statusUpdateRequest.getStatus().toString());
+        return updateStatusResult;
+    }
 
 }
