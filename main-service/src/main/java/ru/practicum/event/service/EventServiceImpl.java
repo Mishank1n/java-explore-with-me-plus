@@ -62,7 +62,7 @@ public class EventServiceImpl implements EventService {
         Category category = CategoryMapper.toCategory(categoryService.getById(newEventDto.getCategory()));
         User user = UserMapper.toUser(userService.getUserById(userId));
 
-        if (newEventDto.getDescription().trim().isEmpty() || newEventDto.getAnnotation().trim().isEmpty() || newEventDto.getParticipantLimit() < 0 ) {
+        if (newEventDto.getDescription().trim().isEmpty() || newEventDto.getAnnotation().trim().isEmpty() || newEventDto.getParticipantLimit() < 0) {
             throw new ValidationException("Описание пустое");
         }
         Event event = EventMapper.toEvent(newEventDto, category, user);
