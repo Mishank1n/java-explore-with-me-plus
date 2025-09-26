@@ -2,6 +2,7 @@ package ru.practicum.request.service;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.event.model.Event;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RequestServiceImp implements RequestService {
 
     private final EntityManager entityManager;
@@ -83,7 +85,7 @@ public class RequestServiceImp implements RequestService {
     public RequestDto cancelRequest(Long userId, Long requestId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.format("User with id = %d not found", userId)));
         Request request = repository.findById(requestId).orElseThrow(() -> new NotFoundException(String.format("Request with id = %d not found", requestId)));
-        repository.updateToRejected(requestId);
+        repository.updateToCanceled(requestId);
         repository.flush();
         entityManager.clear();
         return RequestMapper.toRequestDto(repository.findById(requestId).get());

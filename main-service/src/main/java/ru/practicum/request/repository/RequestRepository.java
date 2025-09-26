@@ -22,6 +22,11 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Modifying
     @Transactional
+    @Query(nativeQuery = true, value = "UPDATE requests SET status = 'CANCELED' WHERE id = :requestId ")
+    void updateToCanceled(@Param("requestId") Long requestId);
+
+    @Modifying
+    @Transactional
     @Query(nativeQuery = true, value = "UPDATE requests SET status = 'CONFIRMED' WHERE id = :requestId ")
     void updateToConfirmed(@Param("requestId") Long requestId);
 
