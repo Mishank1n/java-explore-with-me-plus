@@ -9,10 +9,12 @@ import ru.practicum.category.model.dto.CategoryDto;
 import ru.practicum.category.model.dto.CategoryRequest;
 import ru.practicum.category.model.mapper.CategoryMapper;
 import ru.practicum.category.repository.CategoryRepository;
+import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.ConstraintException;
 import ru.practicum.exception.NotFoundException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -48,6 +50,10 @@ public class CategoryServiceImp implements CategoryService {
         Category category = repository.findById(categoryId).orElseThrow(() ->
                 new NotFoundException(String.format("Category with id = %d was not found", categoryId))
         );
+        Optional<Category> existingCategory = repository.findByName(categoryRequest.getName());
+        if (existingCategory.isPresent() && !existingCategory.get().getId().equals(categoryId)) {
+            throw new ConflictException(String.format("Category with name = %s is already exists", categoryRequest.getName()));
+        }
         category.setName(categoryRequest.getName());
         return CategoryMapper.toCategoryDto(repository.save(category));
     }

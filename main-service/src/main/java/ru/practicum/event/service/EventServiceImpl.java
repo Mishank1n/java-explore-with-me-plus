@@ -56,7 +56,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto create(NewEventDto newEventDto, int userId) {
         LocalDateTime newEventDateTime = LocalDateTime.parse(newEventDto.getEventDate(), TIME_FORMAT);
         if (HOURS.between(LocalDateTime.now(), newEventDateTime) < 2) {
-            throw new BadParameterException("Начало события должно быть минимум на два часа позднее текущего момента");
+            throw new ValidationException("Начало события должно быть минимум на два часа позднее текущего момента");
         }
 
         Category category = CategoryMapper.toCategory(categoryService.getById(newEventDto.getCategory()));
@@ -165,7 +165,7 @@ public class EventServiceImpl implements EventService {
         if (!(newDateString == null || newDateString.isBlank())) {
             LocalDateTime newDate = LocalDateTime.parse(newDateString, TIME_FORMAT);
             if (HOURS.between(LocalDateTime.now(), newDate) < 2) {
-                throw new BadParameterException("Начало события должно быть минимум на два часа позднее текущего момента");
+                throw new ValidationException("Начало события должно быть минимум на два часа позднее текущего момента");
             }
             event.setEventDate(newDate);
         }
@@ -235,7 +235,7 @@ public class EventServiceImpl implements EventService {
         if (!(newDateString == null || newDateString.isBlank())) {
             LocalDateTime newDate = LocalDateTime.parse(newDateString, TIME_FORMAT);
             if (HOURS.between(LocalDateTime.now(), newDate) < 2) {
-                throw new BadParameterException("Начало события должно быть минимум на два часа позднее текущего момента");
+                throw new ValidationException("Начало события должно быть минимум на два часа позднее текущего момента");
             }
             event.setEventDate(newDate);
         }
@@ -436,7 +436,7 @@ public class EventServiceImpl implements EventService {
 
         if (categories != null && !categories.isEmpty()) {
             if (categories.stream().anyMatch(c -> c <= 0)) {
-                throw new BadParameterException("Id категории должен быть > 0");
+                throw new ValidationException("Id категории должен быть > 0");
             }
             Predicate predicateForCategoryId = eventRoot.get("category").get("id").in(categories);
             complexPredicate = criteriaBuilder.and(complexPredicate, predicateForCategoryId);
