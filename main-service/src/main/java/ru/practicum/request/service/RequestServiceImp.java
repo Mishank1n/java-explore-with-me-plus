@@ -50,7 +50,7 @@ public class RequestServiceImp implements RequestService {
     public RequestDto create(Long userId, Long eventId) {
         User requestor = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.format("User with id = %d not found", userId)));
 
-        Request duplicatedRequest = requestRepository.findByIdAndRequester(eventId, requestor);
+        Request duplicatedRequest = requestRepository.findByIdAndRequester(eventId, userId);
         if (duplicatedRequest != null) {
             throw new CreateConditionException("Запрос от пользователя id=" + userId + " на событие c id=" + eventId + " уже существует");
         }
