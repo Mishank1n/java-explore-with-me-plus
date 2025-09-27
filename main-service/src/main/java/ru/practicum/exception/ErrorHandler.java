@@ -17,8 +17,7 @@ public class ErrorHandler {
         return new ErrorResponse(
                 "NOT_FOUND",
                 "The required object was not found.",
-                e.getMessage(),
-                LocalDateTime.now()
+                e.getMessage()
         );
     }
 
@@ -28,8 +27,7 @@ public class ErrorHandler {
         return new ErrorResponse(
                 "BAD_REQUEST",
                 "Incorrectly made request.",
-                e.getMessage(),
-                LocalDateTime.now()
+                e.getMessage()
         );
     }
 
@@ -39,8 +37,7 @@ public class ErrorHandler {
         return new ErrorResponse(
                 "FORBIDDEN",
                 "For the requested operation the conditions are not met.",
-                e.getMessage(),
-                LocalDateTime.now()
+                e.getMessage()
         );
     }
 }

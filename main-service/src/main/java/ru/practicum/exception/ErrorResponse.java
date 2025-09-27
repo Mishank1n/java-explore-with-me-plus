@@ -10,10 +10,10 @@ public class ErrorResponse {
     private final String timestamp;
     private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-    public ErrorResponse(String status, String reason, String message, LocalDateTime timestamp) {
+    public ErrorResponse(String status, String reason, String message) {
         this.status = status;
         this.reason = reason;
         this.message = message;
-        this.timestamp = timestamp.format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN));
+        this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN));
     }
 }
