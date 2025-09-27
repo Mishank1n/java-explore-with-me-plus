@@ -50,7 +50,7 @@ public class CompilationServiceImp implements CompilationService {
     @Override
     public void deleteById(long compId) {
         compilationRepository.findById(compId)
-                .orElseThrow(() -> new NotFoundException("Сompilation with id= " + compId + " not found"));
+                .orElseThrow(() -> new NotFoundException(String.format("Сompilation with id=%d not found", compId)));
         compilationRepository.deleteById(compId);
     }
 
@@ -95,7 +95,7 @@ public class CompilationServiceImp implements CompilationService {
         }
 
         Compilation compilation = compilationRepository.findById(compId)
-                .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " not found"));
+                .orElseThrow(() -> new NotFoundException(String.format("Compilation with id=%d not found", compId)));
         return CompilationMapper.toDto(compilation);
     }
 

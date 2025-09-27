@@ -62,14 +62,15 @@ public class UserServiceImp implements UserService {
 
     @Override
     public void deleteUser(Long id) {
-        userRepository.findById(id).orElseThrow(() -> new NotFoundException("User with id= " + id + " not found"));
+        userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("User with id=%d not found", id)));
         userRepository.deleteById(id);
     }
 
     @Override
     public UserDto getUserById(long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id= " + userId + " не найден"));
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id=%d не найден", userId)));
 
         return UserMapper.toUserDto(user);
     }
