@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 
 public class StatsClient {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    //    private static final String SERVER_URL = "http://localhost:9090";
-    private static final String SERVER_URL = "http://stats-server:9090";
+        private static final String SERVER_URL = "http://localhost:9090";
+//    private static final String SERVER_URL = "http://stats-server:9090";
     private static final RestTemplate rest;
 
     static {

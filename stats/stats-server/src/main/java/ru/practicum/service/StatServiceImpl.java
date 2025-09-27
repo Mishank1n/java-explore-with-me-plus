@@ -28,9 +28,6 @@ public class StatServiceImpl implements StatService {
     @Transactional
     @Override
     public List<StatisticsGetResponseDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        if (start == null) {
-            throw new RuntimeException("Start date cannot be null");
-        }
         if (start.isAfter(end)) {
             throw new RuntimeException("время начала не может быть поздне, чем  время конца выборки");
         }
@@ -45,7 +42,6 @@ public class StatServiceImpl implements StatService {
         return rows.stream()
                 .map(v -> new StatisticsGetResponseDto(v.getApp(), v.getUri(), v.getHits()))
                 .toList();
-
     }
 
 
