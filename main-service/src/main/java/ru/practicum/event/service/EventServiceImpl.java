@@ -56,7 +56,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto create(NewEventDto newEventDto, int userId) {
         LocalDateTime newEventDateTime = LocalDateTime.parse(newEventDto.getEventDate(), TIME_FORMAT);
         if (HOURS.between(LocalDateTime.now(), newEventDateTime) < 2) {
-            throw new BadParameterException("Начало события должно быть минимум на два часа позднее текущего момента");
+            throw new ValidationException("Начало события должно быть минимум на два часа позднее текущего момента");
         }
 
         Category category = CategoryMapper.toCategory(categoryService.getById(newEventDto.getCategory()));
@@ -106,7 +106,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto getByUserAndId(int userId, int eventId) {
         Event event = eventJpaRepository.getByIdAndUserId(eventId, userId);
         if (event == null) {
-            throw new NotFoundException("События с id=" + eventId + " и initiatorId=" + userId + " не найдено");
+            throw new NotFoundException(String.format("События с id=%d и initiatorId=%d не найдено", eventId, userId));
         }
         Map<Long, Long> idViewsMap = StatsClient.getMapIdViews(List.of(event.getId()));
 
@@ -116,7 +116,7 @@ public class EventServiceImpl implements EventService {
 
     public EventFullDto getEvent(long eventId) {
         Event event = eventJpaRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("События с id=" + eventId + " не найдено"));
+                .orElseThrow(() -> new NotFoundException(String.format("События с id=%d не найдено", eventId)));
 
         Map<Long, Long> idViewsMap = StatsClient.getMapIdViews(List.of(event.getId()));
         return EventMapper.toFullDto(event, idViewsMap.getOrDefault(event.getId(), 0L));
@@ -125,7 +125,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto getEvent(int eventId, HttpServletRequest request) {
         EventFullDto eventDto = this.getEvent(eventId);
         if (eventDto.getState() != EventState.PUBLISHED) {
-            throw new NotFoundException("Событие с id=" + eventId + " не опубликовано");
+            throw new NotFoundException(String.format("Событие с id=%d не опубликовано", eventId));
         }
         StatisticsPostResponseDto endpointHitDto = new StatisticsPostResponseDto();
         endpointHitDto.setApp("ewm-main-event-service");
@@ -143,7 +143,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEvent(int userId, int eventId, UpdateEventUserRequest updateRequest) {
         Event event = eventJpaRepository.getByIdAndUserId(eventId, userId);
         if (event == null) {
-            throw new NotFoundException("События с id=" + eventId + " и initiatorId=" + userId + " не найдено");
+            throw new NotFoundException(String.format("События с id=%d и initiatorId=%d не найдено", eventId, userId));
         }
 
         if (event.getState() == EventState.PUBLISHED) {
@@ -165,7 +165,7 @@ public class EventServiceImpl implements EventService {
         if (!(newDateString == null || newDateString.isBlank())) {
             LocalDateTime newDate = LocalDateTime.parse(newDateString, TIME_FORMAT);
             if (HOURS.between(LocalDateTime.now(), newDate) < 2) {
-                throw new BadParameterException("Начало события должно быть минимум на два часа позднее текущего момента");
+                throw new ValidationException("Начало события должно быть минимум на два часа позднее текущего момента");
             }
             event.setEventDate(newDate);
         }
@@ -177,6 +177,9 @@ public class EventServiceImpl implements EventService {
             event.setPaid(updateRequest.getPaid());
         }
         if (updateRequest.getParticipantLimit() != null) {
+            if (updateRequest.getParticipantLimit() < 0) {
+                throw new ValidationException("Participant limit cannot be negative");
+            }
             event.setParticipantLimit(updateRequest.getParticipantLimit());
         }
         if (updateRequest.getRequestModeration() != null) {
@@ -204,7 +207,7 @@ public class EventServiceImpl implements EventService {
         Map<Long, Long> idViewsMap = StatsClient.getMapIdViews(List.of(event.getId()));
 
         Event updatedEvent = eventJpaRepository.findById(event.getId())
-                .orElseThrow(() -> new NotFoundException("Событие с id=" + event.getId() + " не найден"));
+                .orElseThrow(() -> new NotFoundException(String.format("Событие с id=%d не найден", event.getId())));
 
         return EventMapper.toFullDto(updatedEvent, idViewsMap.getOrDefault(event.getId(), 0L));
     }
@@ -213,7 +216,7 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public EventFullDto updateAdminEvent(long eventId, UpdateEventAdminRequest adminRequest) {
         Event event = eventJpaRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("События с id=" + eventId + " не найдено"));
+                .orElseThrow(() -> new NotFoundException(String.format("События с id=%d не найдено", eventId)));
 
         String annotation = adminRequest.getAnnotation();
         if (!(annotation == null || annotation.isBlank())) {
@@ -235,7 +238,7 @@ public class EventServiceImpl implements EventService {
         if (!(newDateString == null || newDateString.isBlank())) {
             LocalDateTime newDate = LocalDateTime.parse(newDateString, TIME_FORMAT);
             if (HOURS.between(LocalDateTime.now(), newDate) < 2) {
-                throw new BadParameterException("Начало события должно быть минимум на два часа позднее текущего момента");
+                throw new ValidationException("Начало события должно быть минимум на два часа позднее текущего момента");
             }
             event.setEventDate(newDate);
         }
@@ -262,16 +265,16 @@ public class EventServiceImpl implements EventService {
                         throw new CreateConditionException("Начало события должно быть минимум на один час позже момента публикации");
                     }
                     if (event.getState() == EventState.PUBLISHED) {
-                        throw new DataConflictException("Попытка опубликовать событие с id=" + event.getId() + ", которое уже опубликовано.");
+                        throw new DataConflictException(String.format("Попытка опубликовать событие с id=%d, которое уже опубликовано.", event.getId()));
                     }
                     if (event.getState() == EventState.CANCELED) {
-                        throw new DataConflictException("Попытка опубликовать событие с id=" + event.getId() + ", которое уже отменено.");
+                        throw new DataConflictException(String.format("Попытка опубликовать событие с id=%d, которое уже отменено.", event.getId()));
                     }
                     event.setState(EventState.PUBLISHED);
                     break;
                 case REJECT_EVENT:
                     if (event.getState() == EventState.PUBLISHED) {
-                        throw new DataConflictException("Попытка отменить событие с id=" + event.getId() + ", которое уже опубликовано.");
+                        throw new DataConflictException(String.format("Попытка отменить событие с id=%d, которое уже опубликовано.", event.getId()));
                     }
                     event.setState(EventState.CANCELED);
                     break;
@@ -286,7 +289,7 @@ public class EventServiceImpl implements EventService {
         Map<Long, Long> idViewsMap = StatsClient.getMapIdViews(List.of(event.getId()));
 
         Event updatedEvent = eventJpaRepository.findById(event.getId())
-                .orElseThrow(() -> new NotFoundException("Событие с id=" + event.getId() + " не найден"));
+                .orElseThrow(() -> new NotFoundException(String.format("Событие с id=%d не найден", event.getId())));
 
         return EventMapper.toFullDto(updatedEvent, idViewsMap.getOrDefault(event.getId(), 0L));
     }
@@ -307,7 +310,7 @@ public class EventServiceImpl implements EventService {
 
         Event event = eventJpaRepository.getByIdAndUserId(eventId, userId);
         if (event == null) {
-            throw new NotFoundException("События с id=" + eventId + " и initiatorId=" + userId + " не найдено");
+            throw new NotFoundException(String.format("События с id=%d и initiatorId=%d не найдено", eventId, userId));
         }
         return requestService.getAllRequestsEventId(event.getId());
     }
@@ -317,7 +320,7 @@ public class EventServiceImpl implements EventService {
     public EventRequestStatusUpdateResult updateStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest updateRequest) {
         Event event = eventJpaRepository.getByIdAndUserId(eventId, userId);
         if (event == null) {
-            throw new NotFoundException("События с id=" + eventId + " и initiatorId=" + userId + " не найдено");
+            throw new NotFoundException(String.format("События с id=%d и initiatorId=%d не найдено", eventId, userId));
         }
 
         List<RequestDto> requests = requestService.getAllRequestsEventId(eventId);
@@ -436,7 +439,7 @@ public class EventServiceImpl implements EventService {
 
         if (categories != null && !categories.isEmpty()) {
             if (categories.stream().anyMatch(c -> c <= 0)) {
-                throw new BadParameterException("Id категории должен быть > 0");
+                throw new ValidationException("Id категории должен быть > 0");
             }
             Predicate predicateForCategoryId = eventRoot.get("category").get("id").in(categories);
             complexPredicate = criteriaBuilder.and(complexPredicate, predicateForCategoryId);
@@ -510,13 +513,13 @@ public class EventServiceImpl implements EventService {
         for (long id : updateRequest.getRequestIds()) {
             RequestDto prDto = prDtoMap.get(id);
             if (prDto == null) {
-                throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
+                throw new NotFoundException(String.format("Запросу на обновление статуса, не найдено событие с id=%d", id));
             }
             if (prDto.getStatus().equals(RequestStatus.PENDING)) {
                 prDto.setStatus(RequestStatus.REJECTED);
                 updateResult.getRejectedRequests().add(prDto);
             } else {
-                throw new CreateConditionException("Нельзя отклонить уже обработанную заявку id=" + id);
+                throw new CreateConditionException(String.format("Нельзя отклонить уже обработанную заявку id=%d", id));
             }
         }
         requestService.updateAll(updateResult.getRejectedRequests(), event);
@@ -533,7 +536,7 @@ public class EventServiceImpl implements EventService {
         for (long id : updateRequest.getRequestIds()) {
             RequestDto prDto = prDtoMap.get(id);
             if (prDto == null) {
-                throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
+                throw new NotFoundException(String.format("Запросу на обновление статуса, не найдено событие с id=%d", id));
             }
             if (prDto.getStatus().equals(RequestStatus.PENDING)) {
                 prDto.setStatus(RequestStatus.CONFIRMED);
@@ -541,7 +544,7 @@ public class EventServiceImpl implements EventService {
                 event.setConfirmedRequests(confirmedRequestsAmount);
                 eventJpaRepository.save(event);
             } else {
-                throw new CreateConditionException("Нельзя подтвердить уже обработанную заявку id=" + id);
+                throw new CreateConditionException(String.format("Нельзя подтвердить уже обработанную заявку id=%d", id));
             }
         }
         requestService.updateAll(updateResult.getConfirmedRequests(), event);
@@ -561,7 +564,7 @@ public class EventServiceImpl implements EventService {
             limitAchieved = confirmedRequestsAmount >= limit;
             RequestDto prDto = prDtoMap.get(id);
             if (prDto == null) {
-                throw new NotFoundException("Запросу на обновление статуса, не найдено событие с id=" + id);
+                throw new NotFoundException(String.format("Запросу на обновление статуса, не найдено событие с id=%d", id));
             }
             if (prDto.getStatus().equals(RequestStatus.PENDING)) {
                 if (limitAchieved) {
@@ -576,13 +579,15 @@ public class EventServiceImpl implements EventService {
                     updateResult.getConfirmedRequests().add(prDto);
                 }
             } else {
-                throw new CreateConditionException("Нельзя подтвердить уже обработанную заявку id=" + id);
+                throw new CreateConditionException(String.format("Нельзя подтвердить уже обработанную заявку id=%d", id));
             }
         }
         requestService.updateAll(updateResult.getRejectedRequests(), event);
         requestService.updateAll(updateResult.getConfirmedRequests(), event);
         if (limitAchieved) {
-            throw new CreateConditionException("Превышен лимит на кол-во участников. Лимит = " + limit + ", кол-во подтвержденных заявок =" + confirmedRequestsAmount);
+            throw new CreateConditionException(String.format(
+                    "Превышен лимит на кол-во участников. Лимит = %d, кол-во подтвержденных заявок =%d",
+                    limit, confirmedRequestsAmount));
         }
         return updateResult;
     }

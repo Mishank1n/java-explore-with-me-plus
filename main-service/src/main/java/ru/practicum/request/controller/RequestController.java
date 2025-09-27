@@ -26,8 +26,8 @@ public class RequestController {
         return service.create(userId, eventId);
     }
 
-    @PatchMapping
-    public RequestDto cancelRequest(@PathVariable("userId") Long userId, @RequestParam("requestId") Long requestId) {
+    @PatchMapping("/{requestId}/cancel")
+    public RequestDto cancelRequest(@PathVariable("userId") Long userId, @PathVariable("requestId") Long requestId) {
         return service.cancelRequest(userId, requestId);
     }
 

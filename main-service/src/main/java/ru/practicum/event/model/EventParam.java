@@ -1,13 +1,15 @@
 package ru.practicum.event.model;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.Builder;
-import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
 public class EventParam {
     private Long userId;

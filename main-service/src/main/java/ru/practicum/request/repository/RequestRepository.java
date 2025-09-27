@@ -21,6 +21,11 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Modifying
     @Transactional
+    @Query(nativeQuery = true, value = "UPDATE requests SET status = 'CANCELED' WHERE id = :requestId ")
+    void updateToCanceled(@Param("requestId") Long requestId);
+
+    @Modifying
+    @Transactional
     @Query(nativeQuery = true, value = "UPDATE requests SET status = 'CONFIRMED' WHERE id = :requestId ")
     void updateToConfirmed(@Param("requestId") Long requestId);
 
@@ -28,4 +33,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "FROM Request as pr " +
             "WHERE pr.event.id = ?1")
     List<Request> findAllByEventId(Long eventId);
+
+    @Query(nativeQuery = true, value = "SELECT * FROM requests WHERE event = :eventId AND requester = :requesterId")
+    Request findByIdAndRequester(@Param("eventId") Long eventId, @Param("requesterId") Long requesterId);
 }
