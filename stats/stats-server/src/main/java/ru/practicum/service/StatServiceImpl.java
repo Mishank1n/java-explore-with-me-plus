@@ -31,6 +31,9 @@ public class StatServiceImpl implements StatService {
         if (start == null) {
             throw new RuntimeException("Start date cannot be null");
         }
+        if (start.isAfter(end)) {
+            throw new RuntimeException("время начала не может быть поздне, чем  время конца выборки");
+        }
         List<ViewStats> rows = switch ((unique ? 2 : 0) + ((uris != null && !uris.isEmpty()) ? 1 : 0)) {
             case 0 -> statisticsRepository.findStats(start, end);
             case 1 -> statisticsRepository.findStatsByUris(start, end, uris);
