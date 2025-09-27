@@ -2,6 +2,7 @@ package ru.practicum.request.service;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.event.model.Event;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RequestServiceImp implements RequestService {
 
     private final EntityManager entityManager;
@@ -48,9 +50,9 @@ public class RequestServiceImp implements RequestService {
     public RequestDto create(Long userId, Long eventId) {
         User requestor = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.format("User with id = %d not found", userId)));
 
-        Request duplicatedRequest = requestRepository.findByIdAndRequester(eventId, requestor);
+        Request duplicatedRequest = requestRepository.findByIdAndRequester(eventId, userId);
         if (duplicatedRequest != null) {
-            throw new CreateConditionException("Запрос от пользователя id=" + userId + " на событие c id=" + eventId + " уже существует");
+            throw new CreateConditionException(String.format("Запрос от пользователя id = %d на событие c id = %d уже существует", userId, eventId));
         }
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
         /*инициатор события не может добавить запрос на участие в своём событии */
@@ -59,12 +61,12 @@ public class RequestServiceImp implements RequestService {
         }
         /*нельзя участвовать в неопубликованном событии*/
         if (event.getState() != EventState.PUBLISHED) {
-            throw new CreateConditionException("Событие с id=" + eventId + " не опубликовано");
+            throw new CreateConditionException(String.format("Событие с id = %d не опубликовано", eventId));
         }
         /*нельзя участвовать при превышении лимита заявок*/
         if (event.getParticipantLimit() != 0) { //если ==0, то кол-во участников неограничено
             if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
-                throw new CreateConditionException("У события с id=" + eventId + " достигнут лимит участников " + event.getParticipantLimit());
+                throw new CreateConditionException(String.format("У события с id = %d достигнут лимит участников %d", eventId, event.getParticipantLimit()));
             }
         }
         Request request = new Request();
@@ -73,6 +75,9 @@ public class RequestServiceImp implements RequestService {
         request.setCreated(LocalDateTime.now());
         if ((event.getParticipantLimit() == 0) || (!event.isRequestModeration())) {
             request.setStatus(RequestStatus.CONFIRMED);
+            int confirmedRequestsAmount = event.getConfirmedRequests();
+            confirmedRequestsAmount++;
+            event.setConfirmedRequests(confirmedRequestsAmount);
         } else {
             request.setStatus(RequestStatus.PENDING);
         }
@@ -83,7 +88,7 @@ public class RequestServiceImp implements RequestService {
     public RequestDto cancelRequest(Long userId, Long requestId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.format("User with id = %d not found", userId)));
         Request request = repository.findById(requestId).orElseThrow(() -> new NotFoundException(String.format("Request with id = %d not found", requestId)));
-        repository.updateToRejected(requestId);
+        repository.updateToCanceled(requestId);
         repository.flush();
         entityManager.clear();
         return RequestMapper.toRequestDto(repository.findById(requestId).get());
@@ -92,7 +97,7 @@ public class RequestServiceImp implements RequestService {
     @Override
     public List<RequestDto> getAllRequestsEventId(Long eventId) {
         if (eventId < 0) {
-            throw new BadParameterException("Id собтия должен быть больше 0");
+            throw new BadParameterException("Id события должен быть больше 0");
         }
 
         List<Request> partRequests = repository.findAllByEventId(eventId); //запрашиваем все запросы на событие

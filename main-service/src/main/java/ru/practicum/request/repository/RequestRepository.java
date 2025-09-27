@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.request.model.Request;
-import ru.practicum.user.model.User;
 
 import java.util.List;
 
@@ -22,6 +21,11 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Modifying
     @Transactional
+    @Query(nativeQuery = true, value = "UPDATE requests SET status = 'CANCELED' WHERE id = :requestId ")
+    void updateToCanceled(@Param("requestId") Long requestId);
+
+    @Modifying
+    @Transactional
     @Query(nativeQuery = true, value = "UPDATE requests SET status = 'CONFIRMED' WHERE id = :requestId ")
     void updateToConfirmed(@Param("requestId") Long requestId);
 
@@ -30,5 +34,6 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "WHERE pr.event.id = ?1")
     List<Request> findAllByEventId(Long eventId);
 
-    Request findByIdAndRequester(Long id, User requester);
+    @Query(nativeQuery = true, value = "SELECT * FROM requests WHERE event = :eventId AND requester = :requesterId")
+    Request findByIdAndRequester(@Param("eventId") Long eventId, @Param("requesterId") Long requesterId);
 }
