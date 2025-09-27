@@ -28,6 +28,9 @@ public class StatServiceImpl implements StatService {
     @Transactional
     @Override
     public List<StatisticsGetResponseDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
+        if (start == null){
+            throw new RuntimeException("Start date cannot be null");
+        }
         List<ViewStats> rows = switch ((unique ? 2 : 0) + ((uris != null && !uris.isEmpty()) ? 1 : 0)) {
             case 0 -> statisticsRepository.findStats(start, end);
             case 1 -> statisticsRepository.findStatsByUris(start, end, uris);
