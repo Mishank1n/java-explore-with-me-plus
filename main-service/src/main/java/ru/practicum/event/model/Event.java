@@ -1,9 +1,11 @@
 package ru.practicum.event.model;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 import ru.practicum.category.model.Category;
 import ru.practicum.user.model.User;
 
@@ -13,58 +15,59 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "events", schema = "public")
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    long id;
 
     @Column(name = "annotation")
-    private String annotation;
+    String annotation;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category")
-    private Category category;
+    Category category;
 
     @Column(name = "confirmed_requests")
-    private int confirmedRequests;
+    int confirmedRequests;
 
     @Column(name = "created_on")
-    private LocalDateTime createdOn;
+    LocalDateTime createdOn;
 
     @Column(name = "description")
-    private String description;
+    String description;
 
     @Column(name = "event_date")
-    private LocalDateTime eventDate;
+    LocalDateTime eventDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiator")
-    private User initiator;
+    User initiator;
 
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "lat", column = @Column(name = "location_lat")),
             @AttributeOverride(name = "lon", column = @Column(name = "location_lon"))})
     @Column(name = "location")
-    private Location location;
+    Location location;
 
     @Column(name = "paid")
-    private boolean paid;
+    boolean paid;
 
     @Column(name = "participant_limit")
-    private int participantLimit;
+    int participantLimit;
 
     @Column(name = "published_on")
-    private LocalDateTime publishedOn;
+    LocalDateTime publishedOn;
 
     @Column(name = "request_moderation")
-    private boolean requestModeration;
+    boolean requestModeration;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "state")
-    private EventState state = EventState.PENDING;
+    EventState state = EventState.PENDING;
 
     @Column(name = "title")
-    private String title;
+    String title;
 }

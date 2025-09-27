@@ -1,9 +1,11 @@
 package ru.practicum.event.model;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.Builder;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,25 +13,26 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventParam {
-    private Long userId;
-    private Long eventId;
+    Long userId;
+    Long eventId;
 
-    private String text;
-    private List<Long> categories;
-    private Boolean paid;
-    private LocalDateTime rangeStart;
-    private LocalDateTime rangeEnd;
+    String text;
+    List<Long> categories;
+    Boolean paid;
+    LocalDateTime rangeStart;
+    LocalDateTime rangeEnd;
 
-    private Boolean onlyAvailable;
-    private String sort;
+    Boolean onlyAvailable;
+    String sort;
 
-    private List<Long> users;
-    private List<String> states;
+    List<Long> users;
+    List<String> states;
 
-    private Integer from;
-    private Integer size;
+    Integer from;
+    Integer size;
 
-    private String requestUri;
-    private HttpServletRequest request;
+    String requestUri;
+    HttpServletRequest request;
 }

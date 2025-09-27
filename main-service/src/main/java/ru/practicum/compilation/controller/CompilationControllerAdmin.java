@@ -12,6 +12,7 @@ import ru.practicum.compilation.service.CompilationService;
 @RequestMapping("/admin/compilations")
 public class CompilationControllerAdmin {
     private final CompilationService compilationService;
+    private static final String COMP_ID_PATH = "/{compId}";
 
     public CompilationControllerAdmin(CompilationService compilationService) {
         this.compilationService = compilationService;
@@ -24,13 +25,13 @@ public class CompilationControllerAdmin {
         return compilationDto;
     }
 
-    @DeleteMapping("/{compId}")
+    @DeleteMapping(COMP_ID_PATH)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCompilation(@PathVariable(name = "compId") int compId) {
         compilationService.deleteById(compId);
     }
 
-    @PatchMapping("/{compId}")
+    @PatchMapping(COMP_ID_PATH)
     @ResponseStatus(HttpStatus.OK)
     public CompilationDto patchCompilation(@PathVariable(name = "compId") int compId,
                                            @Valid @RequestBody UpdateCompilationRequest updateRequest) {

@@ -58,7 +58,7 @@ public class CompilationServiceImp implements CompilationService {
     @Transactional
     public CompilationDto update(long compId, UpdateCompilationRequest updateRequest) {
         Compilation compilation = compilationRepository.findById(compId)
-                .orElseThrow(() -> new NotFoundException("Сompilation with id= " + compId + " not found"));
+                .orElseThrow(() -> new NotFoundException(String.format("Compilation with id=%d not found", compId)));
         Set<Long> eventIds = updateRequest.getEvents();
         Set<Event> eventsSet;
         if (eventIds == null || eventIds.isEmpty()) {

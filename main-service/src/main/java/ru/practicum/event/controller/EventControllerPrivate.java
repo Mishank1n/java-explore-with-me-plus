@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventControllerPrivate {
     private final EventService eventService;
-    private final String eventId = "/{eventId}";
+    private static final String EVENT_ID_PATH = "/{eventId}";
     private final String eventIdRequests = "/{eventId}/requests";
 
 
@@ -44,7 +44,7 @@ public class EventControllerPrivate {
     }
 
 
-    @GetMapping("/{eventId}")
+    @GetMapping(EVENT_ID_PATH)
     @ResponseStatus(HttpStatus.OK)
     public EventFullDto getEventByUserAndId(@PathVariable(name = "userId") @Positive int userId,
                                             @PathVariable(name = "eventId") @Positive int eventId) {
@@ -53,7 +53,7 @@ public class EventControllerPrivate {
         return eventFullDto;
     }
 
-    @PatchMapping("/{eventId}")
+    @PatchMapping(EVENT_ID_PATH)
     @ResponseStatus(HttpStatus.OK)
     public EventFullDto updateEvent(@PathVariable(name = "userId") @Positive int userId,
                                     @PathVariable(name = "eventId") @Positive int eventId,

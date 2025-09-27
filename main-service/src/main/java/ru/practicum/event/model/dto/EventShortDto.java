@@ -2,28 +2,31 @@ package ru.practicum.event.model.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 import ru.practicum.category.model.dto.CategoryDto;
 import ru.practicum.user.model.dto.UserShortDto;
 
 
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventShortDto {
-    private long id;
+    long id;
     @NotBlank
-    private String annotation;
+    String annotation;
     @NotNull
-    private CategoryDto category;
-    private int confirmedRequests;
+    CategoryDto category;
+    int confirmedRequests;
     @NotBlank
-    private String eventDate;
+    String eventDate;
     @NotNull
-    private UserShortDto initiator;
+    UserShortDto initiator;
     @NotNull
-    private boolean paid;
+    boolean paid;
     @NotBlank
-    private String title;
-    private long views;
+    String title;
+    long views;
 }

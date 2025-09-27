@@ -14,6 +14,7 @@ import java.util.List;
 public class CompilationControllerPublic {
 
     private final CompilationService compilationService;
+    private static final String COMP_ID_PATH = "/{compId}";
 
     @Autowired
     public CompilationControllerPublic(CompilationService compilationService) {
@@ -28,7 +29,7 @@ public class CompilationControllerPublic {
         return compnDtoList;
     }
 
-    @GetMapping("/{compId}")
+    @GetMapping(COMP_ID_PATH)
     public CompilationDto getCompilations(@PathVariable int compId) {
         CompilationDto compilationDto = compilationService.getCompById(compId);
         return compilationDto;

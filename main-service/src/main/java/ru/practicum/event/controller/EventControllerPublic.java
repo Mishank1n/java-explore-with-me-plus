@@ -24,6 +24,7 @@ import java.util.List;
 public class EventControllerPublic {
     private final EventService eventService;
     private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    private static final String EVENT_ID_PATH = "/{eventId}";
 
     @GetMapping
     public List<EventShortDto> getEvents(@RequestParam(name = "text", required = false) String text,
@@ -53,7 +54,7 @@ public class EventControllerPublic {
         return eventService.getEvents(p);
     }
 
-    @GetMapping("/{eventId}")
+    @GetMapping(EVENT_ID_PATH)
     public EventFullDto getEvent(@PathVariable(name = "eventId") int eventId,
                                                  HttpServletRequest request) {
         log.info("Выполнен запрос получения события с id={}", eventId);

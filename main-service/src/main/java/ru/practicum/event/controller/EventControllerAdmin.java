@@ -22,9 +22,10 @@ import java.util.List;
 public class EventControllerAdmin {
     private final EventService eventService;
     private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    private static final String EVENT_ID_PATH = "/{eventId}";
 
 
-    @PatchMapping("/{eventId}")
+    @PatchMapping(EVENT_ID_PATH)
     public EventFullDto updateEvent(@PathVariable(name = "eventId") @Positive int eventId,
                                    @Valid @RequestBody UpdateEventAdminRequest adminRequest) {
         EventFullDto eventFullDto = eventService.updateAdminEvent(eventId, adminRequest);

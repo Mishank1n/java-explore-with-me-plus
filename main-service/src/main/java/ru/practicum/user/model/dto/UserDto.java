@@ -3,16 +3,19 @@ package ru.practicum.user.model.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserDto {
-    private long id;
+    long id;
     @NotBlank
-    private String name;
+    String name;
     @Email
     @NotNull
-    private String email;
+    String email;
 }

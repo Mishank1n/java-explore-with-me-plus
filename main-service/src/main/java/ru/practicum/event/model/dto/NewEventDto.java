@@ -3,29 +3,32 @@ package ru.practicum.event.model.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 import ru.practicum.event.model.Location;
 
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewEventDto {
-    @NotNull
-    @Size(min = 20, max = 2000)
-    private String annotation;
-    @NotNull
-    private long category;
-    @NotNull
-    @Size(min = 20, max = 7000)
-    private String description;
     @NotBlank
-    private String eventDate;
+    @Size(min = 20, max = 2000)
+    String annotation;
     @NotNull
-    private Location location;
+    long category;
+    @NotBlank
+    @Size(min = 20, max = 7000)
+    String description;
+    @NotBlank
+    String eventDate;
     @NotNull
-    private boolean paid = false;
-    private int participantLimit = 0;
-    private boolean requestModeration = true;
+    Location location;
+    @NotNull
+    boolean paid = false;
+    int participantLimit = 0;
+    boolean requestModeration = true;
     @Size(min = 3, max = 120)
-    private String title;
+    String title;
 }
