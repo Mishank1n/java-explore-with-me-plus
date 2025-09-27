@@ -34,7 +34,7 @@ public class StatServiceImpl implements StatService {
             case 1 -> statisticsRepository.findStatsByUris(start, end, uris);
             case 2 -> statisticsRepository.findUniqueStats(start, end);
             case 3 -> statisticsRepository.findUniqueStatsByUris(start, end, uris);
-            default -> throw new ValidationException();
+            default -> throw new RuntimeException();
         };
 
         return rows.stream()
