@@ -52,7 +52,7 @@ public class RequestServiceImp implements RequestService {
 
         Request duplicatedRequest = requestRepository.findByIdAndRequester(eventId, userId);
         if (duplicatedRequest != null) {
-            throw new CreateConditionException("Запрос от пользователя id=" + userId + " на событие c id=" + eventId + " уже существует");
+            throw new CreateConditionException(String.format("Запрос от пользователя id = %d на событие c id = %d уже существует", userId, eventId));
         }
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException(String.format("Event with id = %d not found", eventId)));
         /*инициатор события не может добавить запрос на участие в своём событии */
@@ -61,12 +61,12 @@ public class RequestServiceImp implements RequestService {
         }
         /*нельзя участвовать в неопубликованном событии*/
         if (event.getState() != EventState.PUBLISHED) {
-            throw new CreateConditionException("Событие с id=" + eventId + " не опубликовано");
+            throw new CreateConditionException(String.format("Событие с id = %d не опубликовано", eventId));
         }
         /*нельзя участвовать при превышении лимита заявок*/
         if (event.getParticipantLimit() != 0) { //если ==0, то кол-во участников неограничено
             if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
-                throw new CreateConditionException("У события с id=" + eventId + " достигнут лимит участников " + event.getParticipantLimit());
+                throw new CreateConditionException(String.format("У события с id = %d достигнут лимит участников %d", eventId, event.getParticipantLimit()));
             }
         }
         Request request = new Request();
@@ -97,7 +97,7 @@ public class RequestServiceImp implements RequestService {
     @Override
     public List<RequestDto> getAllRequestsEventId(Long eventId) {
         if (eventId < 0) {
-            throw new BadParameterException("Id собтия должен быть больше 0");
+            throw new BadParameterException("Id события должен быть больше 0");
         }
 
         List<Request> partRequests = repository.findAllByEventId(eventId); //запрашиваем все запросы на событие
