@@ -24,7 +24,6 @@ public class EventShortDto {
     String eventDate;
     @NotNull
     UserShortDto initiator;
-    @NotNull
     boolean paid;
     @NotBlank
     String title;

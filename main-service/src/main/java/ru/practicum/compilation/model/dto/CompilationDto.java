@@ -19,7 +19,6 @@ public class CompilationDto {
     Long id;
     @NotBlank
     String title;
-    @NotNull
     boolean pinned;
     @NotNull
     Set<EventShortDto> events = new HashSet<>();

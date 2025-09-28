@@ -31,7 +31,6 @@ public class EventFullDto {
     UserShortDto initiator;
     @NotNull
     Location location;
-    @NotNull
     boolean paid;
     int participantLimit = 0;
     @NotBlank
