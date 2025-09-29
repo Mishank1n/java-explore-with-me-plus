@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class CommentResponse {
     Long id;
     String text;
-    LocalDateTime created;
+    String created;
     Long author;
     Long event;
 }
