@@ -16,6 +16,8 @@ import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -68,5 +70,45 @@ public class CommentServiceImp implements CommentService {
         comment.setText(commentRequest.getText());
         Comment updatedComment = commentRepository.save(comment);
         return CommentMapper.toCommentResponse(updatedComment);
+    }
+
+    @Override
+    public List<CommentResponse> getCommentsByEvent(Long eventId) {
+        eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Событие не найдено"));
+
+        return commentRepository.findAllByEvent_IdOrderByCreatedAsc(eventId).stream()
+                .map(CommentMapper::toCommentResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public CommentResponse getCommentById(Long eventId, Long commentId) {
+        // также валидируем существование события (опционально, но полезно для консистентности URL)
+        eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Событие не найдено"));
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+
+        if (!(comment.getEvent().getId() ==eventId)) {
+            throw new NotFoundException("Комментарий не принадлежит указанному событию");
+        }
+
+        return CommentMapper.toCommentResponse(comment);
+    }
+
+    @Override
+    @Transactional
+    public void deleteComment(Long userId, Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+
+        // Проверка автора
+        if (!(comment.getAuthor().getId()==userId)) {
+            throw new ConflictException("Только автор может удалять комментарий");
+        }
+
+        commentRepository.deleteById(commentId);
     }
 }

@@ -12,9 +12,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"exec": [
-							""
-						],
+						"exec": [""],
 						"type": "text/javascript",
 						"packages": {},
 						"requests": {}
@@ -24,12 +22,19 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Ответ должен содержать код статуса 201 и данные в формате json\", function () {\r",
-							"    pm.response.to.have.status(201);  \r",
-							"    pm.response.to.be.withBody;\r",
-							"    pm.response.to.be.json;\r",
-							"});\r",
-							""
+							"pm.test(\"Ответ должен содержать код статуса 201 и данные в формате json\", function () {",
+							"    pm.response.to.have.status(201);  ",
+							"    pm.response.to.be.withBody;",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"// Сохраняем id созданного комментария для следующих запросов (если ответ содержит id)",
+							"try {",
+							"  const j = pm.response.json();",
+							"  if (j && j.id !== undefined) {",
+							"    pm.environment.set('commentId', j.id);",
+							"  }",
+							"} catch(e) {}"
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -85,13 +90,13 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"const body = pm.response.json();\r",
-							"\r",
-							"pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function() {\r",
-							"pm.response.to.be.ok;\r",
-							"pm.response.to.be.withBody;\r",
-							"pm.response.to.be.json;\r",
-							"});\r",
+							"const body = pm.response.json();",
+							"",
+							"pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function() {",
+							"pm.response.to.be.ok;",
+							"pm.response.to.be.withBody;",
+							"pm.response.to.be.json;",
+							"});",
 							""
 						],
 						"type": "text/javascript",
@@ -102,9 +107,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"exec": [
-							""
-						],
+						"exec": [""],
 						"type": "text/javascript",
 						"packages": {},
 						"requests": {}
@@ -140,6 +143,126 @@
 						"comment",
 						"1"
 					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Получение всех комментариев события (GET /event/1/comment)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Статус 200\", function(){ pm.response.to.have.status(200); });",
+							"pm.test(\"Ответ c телом и JSON\", function(){",
+							"  pm.response.to.be.withBody;",
+							"  pm.response.to.be.json;",
+							"});",
+							"const data = pm.response.json();",
+							"pm.test(\"Ответ — массив\", function(){",
+							"  pm.expect(Array.isArray(data)).to.be.true;",
+							"});",
+							"pm.test(\"Элементы содержат ключевые поля\", function(){",
+							"  if (Array.isArray(data) && data.length){",
+							"    ['id','text','created','author','event'].forEach(k => pm.expect(data[0]).to.have.property(k));",
+							"  }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/event/1/comment",
+					"host": ["{{baseUrl}}"],
+					"path": ["event","1","comment"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Получение одного комментария (GET /event/1/comment/:commentId)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Статус 200\", function(){ pm.response.to.have.status(200); });",
+							"pm.test(\"Ответ c телом и JSON\", function(){",
+							"  pm.response.to.be.withBody;",
+							"  pm.response.to.be.json;",
+							"});",
+							"const j = pm.response.json();",
+							"pm.test(\"Есть ключевые поля\", function(){",
+							"  ['id','text','created','author','event'].forEach(k => pm.expect(j).to.have.property(k));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/event/1/comment/{{commentId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["event","1","comment","{{commentId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Удаление комментария (DELETE /event/1/comment/:commentId)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Статус 204 No Content\", function(){ pm.response.to.have.status(204); });",
+							"pm.test(\"Тело отсутствует\", function(){ pm.expect(pm.response.text()).to.be.oneOf(['', undefined]); });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{ "key": "X-User-Id", "value": "1", "type": "text" }
+				],
+				"url": {
+					"raw": "{{baseUrl}}/event/1/comment/{{commentId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["event","1","comment","{{commentId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Проверка после удаления (GET ожидаем 404)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Статус 404 Not Found\", function(){ pm.response.to.have.status(404); });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/event/1/comment/{{commentId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["event","1","comment","{{commentId}}"]
 				}
 			},
 			"response": []
