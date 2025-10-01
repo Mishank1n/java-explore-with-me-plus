@@ -91,7 +91,7 @@ public class CommentServiceImp implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
 
-        if (!(comment.getEvent().getId() ==eventId)) {
+        if (!(comment.getEvent().getId() == eventId)) {
             throw new NotFoundException("Комментарий не принадлежит указанному событию");
         }
 
@@ -105,7 +105,7 @@ public class CommentServiceImp implements CommentService {
                 .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
 
         // Проверка автора
-        if (!(comment.getAuthor().getId()==userId)) {
+        if (!(comment.getAuthor().getId() == userId)) {
             throw new ConflictException("Только автор может удалять комментарий");
         }
 
