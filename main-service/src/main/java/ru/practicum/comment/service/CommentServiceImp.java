@@ -33,11 +33,11 @@ public class CommentServiceImp implements CommentService {
     public CommentResponse createComment(Long userId, Long eventId, CommentRequest commentRequest) {
         User user = userRepository.findById(userId).get();
         if (user == null) {
-            throw new NotFoundException("Пользователь не найден");
+            throw new NotFoundException(String.format("Пользователь с id = %d не найден", userId));
         }
         Event event = eventRepository.findById(eventId).get();
         if (event == null) {
-            throw new NotFoundException("Событие не найдено");
+            throw new NotFoundException(String.format("Событие с id = %d не найдено", eventId));
         }
 
         Comment comment = new Comment();
@@ -55,13 +55,13 @@ public class CommentServiceImp implements CommentService {
     public CommentResponse updateComment(Long userId, Long commentId, CommentRequest commentRequest) {
         Comment comment = commentRepository.findById(commentId).get();
         if (comment == null) {
-            throw new NotFoundException("Комментарий не найден");
+            throw new NotFoundException(String.format("Комментарий с id = %d не найден", commentId));
         }
 
         User user = userRepository.findById(userId).get();
 
         if (user == null) {
-            throw new NotFoundException("Пользователь не найден");
+            throw new NotFoundException(String.format("Пользователь с id = %d не найден", userId));
         }
 
         if (comment.getAuthor().getId() != userId) {
@@ -75,7 +75,7 @@ public class CommentServiceImp implements CommentService {
     @Override
     public List<CommentResponse> getCommentsByEvent(Long eventId) {
         eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Событие не найдено"));
+                .orElseThrow(() -> new NotFoundException(String.format("Событие с id = %d не найдено", eventId)));
 
         return commentRepository.findAllByEvent_IdOrderByCreatedAsc(eventId).stream()
                 .map(CommentMapper::toCommentResponse)
@@ -86,13 +86,13 @@ public class CommentServiceImp implements CommentService {
     public CommentResponse getCommentById(Long eventId, Long commentId) {
         // также валидируем существование события (опционально, но полезно для консистентности URL)
         eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Событие не найдено"));
+                .orElseThrow(() -> new NotFoundException(String.format("Событие с id = %d не найдено", eventId)));
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+                .orElseThrow(() -> new NotFoundException(String.format("Комментарий с id = %d не найден", commentId)));
 
         if (!(comment.getEvent().getId() == eventId)) {
-            throw new NotFoundException("Комментарий не принадлежит указанному событию");
+            throw new NotFoundException(String.format("Комментарий с id = %d не принадлежит указанному событию  с id = %d", commentId, eventId));
         }
 
         return CommentMapper.toCommentResponse(comment);
@@ -102,7 +102,7 @@ public class CommentServiceImp implements CommentService {
     @Transactional
     public void deleteComment(Long userId, Long commentId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+                .orElseThrow(() -> new NotFoundException(String.format("Комментарий с id = %d не найден", commentId)));
 
         // Проверка автора
         if (!(comment.getAuthor().getId() == userId)) {
